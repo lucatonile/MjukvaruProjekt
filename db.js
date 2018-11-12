@@ -1,17 +1,15 @@
-var mysql = require('mysql');
+var mongoose = require('mongoose');
 
-//local mysql db connection
-var connection = mysql.createConnection({
-    host: 'localhost',
-    port: 3306,
-    user: 'root',
-    database: 'mydb',
-    password: 'bikeini'
-});
+var mongoDB = 'mongodb://heroku_s6frx9gr:72tejkhqkoq8r9pn9kqbkquid0@ds063879.mlab.com:63879/heroku_s6frx9gr';
+mongoose.connect(mongoDB);
 
-connection.connect(function(err) {
-    if (err) console.log(err);
-    //throw err
-});
+// Get Mongoose to use the global promise library
+mongoose.Promise = global.Promise;
 
-module.exports = connection;
+//Get the default connection
+var db = mongoose.connection;
+
+//Bind connection to error event (to get notification of connection errors)
+db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+
+module.exports = db;

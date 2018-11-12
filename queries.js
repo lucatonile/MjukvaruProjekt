@@ -1,34 +1,40 @@
-var db = require("./db.js");
+var mongoose = require('mongoose');
+var models = require('./models.js');
 
 function addBike(data, callback){
-    db.query("INSERT INTO bike () VALUES ()", function (err, res) {
-        if(err) {
-            console.log("error: ", err);
-            // result(null, err);
-        }
-        else{
-            console.log('res : ', res);  
-            return callback(res);
-        //  result(null, res);
-        }
-     });  
+    var bike = new models.bike({brand: "nike", color: "red"});
+
+    bike.save(function (err, bike) {
+        if (err) return console.error(err);
+        callback("Success in adding bike!");
+    });
 }
 
 function getBikes(data, callback){
-    db.query("SELECT * FROM bike", function (err, res) {
-        if(err) {
-            console.log("error: ", err);
-            // result(null, err);
-        }
-        else{
-            console.log('res : ', res);  
-            return callback(res);
-        //  result(null, res);
-        }
-     });  
+    models.bike.find(function (err, bikes) {
+        if (err) return console.error(err);
+        callback(bikes);
+    })
+}
+
+function addUser(data, callback){
+    var user = new models.user({username: "jakob", password: "lucas<3"});
+    user.save(function (err, user) {
+        if (err) return console.error(err);
+        callback("Success in adding user!");
+    })
+}
+
+function getUsers(data, callback){
+    models.user.find(function (err, users) {
+        if (err) return console.error(err);
+        callback(users);
+    })
 }
 
 module.exports = {
     addBike: addBike,
-    getBikes: getBikes
+    getBikes: getBikes,
+    addUser: addUser,
+    getUsers: getUsers
 }
