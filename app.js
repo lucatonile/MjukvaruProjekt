@@ -9,7 +9,6 @@ var tasksRouter = require('./routes/tasks');
 var app = express();
 var db = require("./db.js");
 
-
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
@@ -39,5 +38,16 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+app.listen(8000, () => {
+  console.log('Bikeify app listening on port 8000!')
+});
+
+/* Hokus pokus from StackOverflow to parse POST */
+var bodyParser = require('body-parser')
+app.use(bodyParser.json() );       // to support JSON-encoded bodies
+app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
+  extended: true
+}));
 
 module.exports = app;

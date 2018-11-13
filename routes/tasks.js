@@ -24,11 +24,29 @@ router.get('/getbikes/', function(req, res, next) {
     })
 });
 
-router.get('/adduser/', function(req, res, next) {
-    queries.addUser(res, function(result){
+router.get('/getstolenbikes/', function(req, res, next) {
+    queries.getStolenBikes(res, function(result){
         res.send(result);
     })
 });
+
+router.get('/getfoundbikes/', function(req, res, next) {
+    queries.getFoundBikes(res, function(result){
+        res.send(result);
+    })
+});
+
+router.get('/adduser/', function(req, res, next) {
+    queries.addUser(req, res, function(result){
+        res.send(result);
+    })
+});
+
+router.post('/adduser/', function(req, res) {
+    queries.addUserPost(req, res, function(result){
+        res.send(result);
+    })
+})
 
 router.get('/getusers/', function(req, res, next) {
     queries.getUsers(res, function(result){
@@ -36,5 +54,10 @@ router.get('/getusers/', function(req, res, next) {
     })
 });
 
+router.post('/getuserinfoemail/', function(req, res) {
+    queries.getUserInfoEmail(req, res, function(result){
+        res.send(result);
+    })
+})
 
 module.exports = router;
