@@ -48,7 +48,7 @@ function getUserInfoEmail(req, res, callback) {
         return console.error(err);
       }
       callback(user);
-    }).select('username email phone_number create_time game_score -_id');
+    });
 }
 
 function addUser(req, res, callback) {
