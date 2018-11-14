@@ -28,4 +28,10 @@ router.post('/getuserinfoemail/', (req, res) => {
   });
 });
 
+router.post('/gethighscores/', (req, res) => {
+  queries.getHighscore(req, res, (result) => {
+    res.send(result);
+  });
+});
+
 module.exports = router;
