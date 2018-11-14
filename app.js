@@ -1,12 +1,15 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var tasksRouter = require('./routes/tasks');
-var app = express();
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
+const bodyParser = require('body-parser'); // Hokus pokus from StackOverflow to parse POST
+require('./db.js');
+const indexRouter = require('./routes/index');
+const usersRouter = require('./routes/users');
+const tasksRouter = require('./routes/tasks');
+
+const app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -23,12 +26,12 @@ app.use('/users', usersRouter);
 app.use('/tasks', tasksRouter);
 
 // catch 404 and forward to error handler
-app.use(function (req, res, next) {
+app.use((req, res, next) => {
   next(createError(404));
 });
 
 // error handler
-app.use(function (err, req, res, next) {
+app.use((err, req, res) => {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
@@ -38,15 +41,9 @@ app.use(function (err, req, res, next) {
   res.render('error');
 });
 
-app.listen(8000, () => {
-  console.log('Bikeify app listening on port 8000!');
-});
-
-// Hokus pokus from StackOverflow to parse POST
-var bodyParser = require('body-parser');
 app.use(bodyParser.json()); // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({ // to support URL-encoded bodies
-  extended: true
+  extended: true,
 }));
 
 module.exports = app;

@@ -1,63 +1,64 @@
-var express = require('express');
-var db = require('../db.js'); // TODO DB unreachable if this is removed even though lint says unused? WTF!
-var queries = require('../queries.js');
+const express = require('express');
+// const db = require('../db.js');
+// TODO DB unreachable if this is removed even though lint says unused? WTF!
+const queries = require('../queries.js');
 
-var router = express.Router();
+const router = express.Router();
 
 /* GET home page. */
 
-router.get('/', function (req, res, next) {
+router.get('/', (req, res) => {
   res.send('handle db tasks');
 });
 
-router.get('/addbike/', function (req, res, next) {
-  queries.addBike(req, function (result) {
+router.get('/addbike/', (req) => {
+  queries.addBike(req, (result) => {
     console.log(result);
   });
 });
 
-router.get('/removebike/', function (req, res, next) {
+router.get('/removebike/', (req, res) => {
   res.send('remove bike from db');
 });
 
-router.get('/getbikes/', function (req, res, next) {
-  queries.getBikes(res, function (result) {
+router.get('/getbikes/', (req, res) => {
+  queries.getBikes(res, (result) => {
     res.send(result);
   });
 });
 
-router.get('/getstolenbikes/', function (req, res, next) {
-  queries.getStolenBikes(res, function (result) {
+router.get('/getstolenbikes/', (req, res) => {
+  queries.getStolenBikes(res, (result) => {
     res.send(result);
   });
 });
 
-router.get('/getfoundbikes/', function (req, res, next) {
-  queries.getFoundBikes(res, function (result) {
+router.get('/getfoundbikes/', (req, res) => {
+  queries.getFoundBikes(res, (result) => {
     res.send(result);
   });
 });
 
-router.get('/adduser/', function (req, res, next) {
-  queries.addUser(req, res, function (result) {
+router.get('/adduser/', (req, res) => {
+  queries.addUser(req, res, (result) => {
     res.send(result);
   });
 });
 
-router.post('/adduser/', function (req, res) {
-  queries.addUserPost(req, res, function (result) {
+router.post('/adduser/', (req, res) => {
+  queries.addUserPost(req, res, (result) => {
     res.send(result);
   });
 });
 
-router.get('/getusers/', function (req, res, next) {
-  queries.getUsers(res, function (result) {
+router.get('/getusers/', (req, res) => {
+  queries.getUsers(res, (result) => {
     res.send(result);
   });
 });
 
-router.post('/getuserinfoemail/', function (req, res) {
-  queries.getUserInfoEmail(req, res, function (result) {
+router.post('/getuserinfoemail/', (req, res) => {
+  queries.getUserInfoEmail(req, res, (result) => {
     res.send(result);
   });
 });

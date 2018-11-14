@@ -1,7 +1,6 @@
-var mongoose = require('mongoose');
+const mongoose = require('mongoose');
 
-var mongoDB = process.env.DATABASE_URL;
-console.log('Process env: ' + mongoDB);
+const mongoDB = process.env.DATABASE_URL;
 
 mongoose.connect(mongoDB, { useNewUrlParser: true });
 
@@ -9,7 +8,7 @@ mongoose.connect(mongoDB, { useNewUrlParser: true });
 mongoose.Promise = global.Promise;
 
 // Get the default connection
-var db = mongoose.connection;
+const db = mongoose.connection;
 
 /*
   Prevents deprecationWarning: collection.ensureIndex is deprecated. Use createIndexes instead.
