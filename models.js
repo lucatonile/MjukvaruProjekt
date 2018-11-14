@@ -113,12 +113,11 @@ const userSchema = new mongoose.Schema({
 
 // From: https://github.com/DDCSLearning/authenticationIntro/commit/33ac4662c38f7c3115615983cf60effe2ebbd7ed
 // hashing a password before saving it to the database
-userSchema.pre('save', function (next) {
+userSchema.pre('save', function encrypt(next) {
   const user = this;
+  // eslint-disable-next-line consistent-return
   bcrypt.hash(user.password, 10, (err, hash) => {
-    if (err) {
-      return next(err);
-    }
+    if (err) return next(err);
     user.password = hash;
     next();
   });

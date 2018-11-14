@@ -13,7 +13,7 @@ function addBike(data, callback) {
 
 function getBikes(data, callback) {
   models.Bike.find((err, bikes) => {
-    if (err) return console.error(err);
+    if (err) throw new Error(err);
     callback(bikes);
   }).populate('submitter');
 }
@@ -23,7 +23,7 @@ function getStolenBikes(data, callback) {
     (err, bikes) => {
       if (err) {
         callback(err);
-        return console.error(err);
+        if (err) throw new Error(err);
       }
       callback(bikes);
     }).populate('submitter').populate('comments.author');
@@ -34,7 +34,7 @@ function getFoundBikes(data, callback) {
     (err, bikes) => {
       if (err) {
         callback(err);
-        return console.error(err);
+        if (err) throw new Error(err);
       }
       callback(bikes);
     }).populate('submitter');
@@ -45,7 +45,7 @@ function getUserInfoEmail(req, res, callback) {
     (err, user) => {
       if (err) {
         callback(err);
-        return console.error(err);
+        throw new Error(err);
       }
       callback(user);
     });
@@ -82,7 +82,7 @@ function addUserPost(req, res, callback) {
 
 function getUsers(data, callback) {
   models.User.find((err, users) => {
-    if (err) return console.error(err);
+    if (err) throw new Error(err);
     callback(users);
   });
 }
