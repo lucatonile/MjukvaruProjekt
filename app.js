@@ -7,7 +7,7 @@ const bodyParser = require('body-parser'); // Hokus pokus from StackOverflow to 
 require('./db.js');
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
-const tasksRouter = require('./routes/tasks');
+const bikesRouter = require('./routes/bikes');
 
 const app = express();
 
@@ -23,7 +23,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-app.use('/tasks', tasksRouter);
+app.use('/bikes', bikesRouter);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {

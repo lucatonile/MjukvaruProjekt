@@ -1,5 +1,5 @@
 const express = require('express');
-const queries = require('../queries.js');
+const queries = require('../queries/bikeQueries');
 
 const router = express.Router();
 
@@ -36,28 +36,5 @@ router.get('/getfoundbikes/', (req, res) => {
   });
 });
 
-router.get('/adduser/', (req, res) => {
-  queries.addUser(req, res, (result) => {
-    res.send(result);
-  });
-});
-
-router.post('/adduser/', (req, res) => {
-  queries.addUserPost(req, res, (result) => {
-    res.send(result);
-  });
-});
-
-router.get('/getusers/', (req, res) => {
-  queries.getUsers(res, (result) => {
-    res.send(result);
-  });
-});
-
-router.post('/getuserinfoemail/', (req, res) => {
-  queries.getUserInfoEmail(req, res, (result) => {
-    res.send(result);
-  });
-});
 
 module.exports = router;

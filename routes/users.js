@@ -1,14 +1,31 @@
 const express = require('express');
+const queries = require('../queries/userQueries');
 
 const router = express.Router();
 
-/* GET users listing. */
-router.get('/', (req, res) => {
-  res.send('respond with a resource');
+
+router.get('/adduser/', (req, res) => {
+  queries.addUser(req, res, (result) => {
+    res.send(result);
+  });
 });
 
-router.get('/cool/', (req, res) => {
-  res.send('respond with a cool resource');
+router.post('/adduser/', (req, res) => {
+  queries.addUserPost(req, res, (result) => {
+    res.send(result);
+  });
+});
+
+router.get('/getusers/', (req, res) => {
+  queries.getUsers(res, (result) => {
+    res.send(result);
+  });
+});
+
+router.post('/getuserinfoemail/', (req, res) => {
+  queries.getUserInfoEmail(req, res, (result) => {
+    res.send(result);
+  });
 });
 
 module.exports = router;
