@@ -1,8 +1,8 @@
-var mongoose = require('mongoose');
-var ObjectId = mongoose.Schema.Types.ObjectId;
+let mongoose = require('mongoose');
+let ObjectId = mongoose.Schema.Types.ObjectId;
 require('mongoose-type-email');
 
-var bikeSchema = new mongoose.Schema({
+let bikeSchema = new mongoose.Schema({
     submitter: ObjectId,
     active: Boolean,
     type: {
@@ -37,9 +37,9 @@ var bikeSchema = new mongoose.Schema({
         date: Date}]
 });
 
-var bikeModel = mongoose.model('Bike', bikeSchema, "bikes");
+let bikeModel = mongoose.model('Bike', bikeSchema, "bikes");
 
-var userSchema = new mongoose.Schema({
+let userSchema = new mongoose.Schema({
     username: String,
     email: String,
     password: String,
@@ -48,9 +48,17 @@ var userSchema = new mongoose.Schema({
     game_score: Number
 });
 
-var userModel = mongoose.model('User', userSchema, "users");
+let userModel = mongoose.model('User', userSchema, "users");
+
+let imageSchema = new mongoose.Schema({
+    //unique id
+    name: String
+});
+
+let imageModel = mongoose.model('image', userSchema, "images");
 
 module.exports = {
     bike: bikeModel,
-    user: userModel
+    user: userModel,
+    image: imageModel
 }

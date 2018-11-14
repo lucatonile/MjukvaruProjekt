@@ -32,9 +32,32 @@ function getUsers(data, callback){
     })
 }
 
+function addImage(data, callback){  
+
+   
+    // let x = models.image.find({path: {$not: {$eq: data.path}}}).count(
+    // function(error, size){
+    //     console.log(size)
+    // });
+    // let y = models.image.find({path: {$eq: data.path}}).count(
+    // function(error, size){
+    //     console.log(size)
+    // });
+
+    let image = new models.image({path: data.path});
+    image.save(function (err, user) {
+        if (err) return console.error(err);
+        callback("Success in adding image!");
+    })
+}
+
+//find image with id! todo
+
+
 module.exports = {
     addBike: addBike,
     getBikes: getBikes,
     addUser: addUser,
-    getUsers: getUsers
+    getUsers: getUsers,
+    addImage: addImage
 }

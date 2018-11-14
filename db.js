@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 
 var mongoDB = 'mongodb://heroku_s6frx9gr:72tejkhqkoq8r9pn9kqbkquid0@ds063879.mlab.com:63879/heroku_s6frx9gr';
-mongoose.connect(mongoDB);
+mongoose.connect(mongoDB, { useNewUrlParser: true });
 
 // Get Mongoose to use the global promise library
 mongoose.Promise = global.Promise;
