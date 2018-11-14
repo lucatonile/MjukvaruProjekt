@@ -1,19 +1,18 @@
-// Imports the Google Cloud client library
+require('dotenv').config();
+
 let express = require('express');
+let router = express.Router();
+let imageQueries = require('../queries/imageQueries');
+
+const uuidv1 = require('uuid/v1');
 const {Storage} = require('@google-cloud/storage');
 
-let router = express.Router();
-let path = require('path');
-let queries = require('../queries.js');
-let fs = require('fs');
-const uuidv1 = require('uuid/v1');
-const bucketName = 'bikeini';
-
-// Creates a client
 const storage = new Storage({  
-    projectId: 'bikeini',  
-    keyFilename: './bikeini-1542130432563-745c86847ce9.json'
+    projectId: process.env.GCS_PROJECTID,  
+    keyFilename: process.env.GCS_KEYFILENAME
 });
+
+const bucketName = process.env.GCS_PROJECTID;
 
 router.post('/', function(req, res, next){
     let filename = uuidv1();
@@ -38,9 +37,8 @@ router.post('/', function(req, res, next){
             }, function(err) {
                 if (!err) {
                 // File written successfully.
-                    queries.addImage({name: filename}, function(result){
+                    imageQueries.addImage({name: filename}, function(result){
                         res.end(filename+" uploaded to gcs and mongodb");
-                        storage.bucket(bucketName).file(filename).download({destination: './'+filename});
                     });
                 }
      });          
