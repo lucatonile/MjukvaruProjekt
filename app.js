@@ -7,7 +7,6 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var tasksRouter = require('./routes/tasks');
 var app = express();
-var db = require("./db.js");
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -24,12 +23,12 @@ app.use('/users', usersRouter);
 app.use('/tasks', tasksRouter);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
@@ -40,13 +39,13 @@ app.use(function(err, req, res, next) {
 });
 
 app.listen(8000, () => {
-  console.log('Bikeify app listening on port 8000!')
+  console.log('Bikeify app listening on port 8000!');
 });
 
-/* Hokus pokus from StackOverflow to parse POST */
-var bodyParser = require('body-parser')
-app.use(bodyParser.json() );       // to support JSON-encoded bodies
-app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
+// Hokus pokus from StackOverflow to parse POST
+var bodyParser = require('body-parser');
+app.use(bodyParser.json()); // to support JSON-encoded bodies
+app.use(bodyParser.urlencoded({ // to support URL-encoded bodies
   extended: true
 }));
 
