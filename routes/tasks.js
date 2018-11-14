@@ -1,6 +1,4 @@
 const express = require('express');
-// const db = require('../db.js');
-// TODO DB unreachable if this is removed even though lint says unused? WTF!
 const queries = require('../queries.js');
 
 const router = express.Router();
@@ -12,8 +10,7 @@ router.get('/', (req, res) => {
 });
 
 router.get('/addbike/', (req) => {
-  queries.addBike(req, (result) => {
-    console.log(result);
+  queries.addBike(req, () => {
   });
 });
 
