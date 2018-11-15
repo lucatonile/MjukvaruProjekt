@@ -14,8 +14,10 @@ router.get('/addbike/', (req) => {
   });
 });
 
-router.get('/removebike/', (req, res) => {
-  res.send('remove bike from db');
+router.post('/removebike/', (req, res) => {
+  queries.removeBike(req, res, (result) => {
+    res.send(result);
+  });
 });
 
 router.get('/getbikes/', (req, res) => {

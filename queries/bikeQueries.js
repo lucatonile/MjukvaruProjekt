@@ -39,8 +39,23 @@ function getFoundBikes(data, callback) {
     }).populate('submitter');
 }
 
+function removeBike(req, res, callback) {
+  if (req.body.id === undefined) {
+    callback('Bike id not provided!');
+  } else if (req.body.id === '') {
+    callback('Bike id shouldnt be empty!');
+  } else {
+    bikeModel.Bike.findOneAndDelete({ id: req.body.id },
+      (err) => {
+        if (err) { callback(err); }
+        callback(`Bike ${req.body.id} removed (or not found)!`);
+      }).remove();
+  }
+}
+
 module.exports = {
   addBike,
+  removeBike,
   getBikes,
   getStolenBikes,
   getFoundBikes,
