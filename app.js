@@ -5,12 +5,12 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const bodyParser = require('body-parser'); // Hokus pokus from StackOverflow to parse POST
 require('./db.js');
+const fileUpload = require('express-fileupload');
+const authRouter = require('./routes/auth');
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const bikesRouter = require('./routes/bikes');
 const uploadRouter = require('./routes/upload');
-const fileUpload = require('express-fileupload');
-
 
 const app = express();
 
@@ -26,9 +26,15 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
-app.use('/bikes', bikesRouter);
-app.use('/upload', uploadRouter);
+const auth = require('./queries/authQueries');
+
+// Public routes
+app.use('/auth/', authRouter);
+
+// Private routes
+app.use('/users', auth.validateUser, usersRouter);
+app.use('/bikes', auth.validateUser, bikesRouter);
+app.use('/upload', auth.validateUser, uploadRouter);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
@@ -50,5 +56,8 @@ app.use(bodyParser.json()); // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({ // to support URL-encoded bodies
   extended: true,
 }));
+
+// Should this be an environmental variable?
+app.set('secretKey', 'nodeRestApi');
 
 module.exports = app;

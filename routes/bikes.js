@@ -24,6 +24,12 @@ router.get('/getbikes/', (req, res) => {
   });
 });
 
+router.post('/getbikes/', (req, res) => {
+  queries.getBikes(res, (result) => {
+    res.send(result);
+  });
+});
+
 router.get('/getstolenbikes/', (req, res) => {
   queries.getStolenBikes(res, (result) => {
     res.send(result);

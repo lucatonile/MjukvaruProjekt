@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@google-cloud/storage": "^2.3.0",
+    "bcrypt": "3.0.2",
     "bcryptjs": "^2.4.3",
     "body-parser": "1.18.3",
     "cookie-parser": "~1.4.3",
@@ -18,10 +19,11 @@
     "express-mongo-db": "^2.0.4",
     "http-errors": "~1.6.2",
     "jade": "~1.11.0",
+    "jsonwebtoken": "8.4.0",
     "mongoose": "^5.3.11",
     "mongoose-type-email": "^1.0.9",
     "mongoose-unique-validator": "2.0.2",
-    "morgan": "~1.9.0",
+    "morgan": "1.9.1",
     "mysql": "^2.16.0",
     "uuid": "^3.3.2"
   },

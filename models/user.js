@@ -3,6 +3,8 @@ const bcrypt = require('bcryptjs');
 require('mongoose-type-email');
 const uniqueValidator = require('mongoose-unique-validator');
 
+const saltRounds = 10;
+
 /* User model */
 
 const userSchema = new mongoose.Schema({
@@ -23,6 +25,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     select: false,
+    trim: true,
   },
   create_time: {
     type: Date,
@@ -42,7 +45,7 @@ userSchema.plugin(uniqueValidator);
 userSchema.pre('save', function encrypt(next) {
   const user = this;
   // eslint-disable-next-line consistent-return
-  bcrypt.hash(user.password, 10, (err, hash) => {
+  bcrypt.hash(user.password, saltRounds, (err, hash) => {
     if (err) return next(err);
     user.password = hash;
     next();

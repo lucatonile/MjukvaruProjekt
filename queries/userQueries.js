@@ -12,18 +12,6 @@ function getUserInfoEmail(req, res, callback) {
     });
 }
 
-function addUser(req, res, callback) {
-  const user = new userModel.User({
-    username: req.query.username,
-    password: req.query.password,
-  });
-
-  user.save((err) => {
-    if (err) throw new Error(err);
-    callback('Success in adding user!');
-  });
-}
-
 function addUserPost(req, res, callback) {
   const user = new userModel.User({
     username: req.body.username,
@@ -58,7 +46,6 @@ function getHighscore(req, res, callback) {
 }
 
 module.exports = {
-  addUser,
   addUserPost,
   getUsers,
   getUserInfoEmail,
