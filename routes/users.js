@@ -21,4 +21,10 @@ router.post('/gethighscores/', (req, res) => {
   });
 });
 
+router.post('/removeuser/', (req, res) => {
+  queries.removeUser(req, res, (result) => {
+    res.send(result);
+  });
+});
+
 module.exports = router;
