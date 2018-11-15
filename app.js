@@ -10,7 +10,6 @@ const authRouter = require('./routes/auth');
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const bikesRouter = require('./routes/bikes');
-const uploadRouter = require('./routes/upload');
 
 const app = express();
 
@@ -34,8 +33,7 @@ app.use('/auth', authRouter);
 
 // Private routes
 app.use('/users', auth.validateUser, usersRouter);
-app.use('/bikes', auth.validateUser, bikesRouter);
-app.use('/upload', auth.validateUser, uploadRouter);
+app.use('/bikes', bikesRouter);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {

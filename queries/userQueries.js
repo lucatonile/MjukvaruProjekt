@@ -1,18 +1,19 @@
 /* eslint-disable array-callback-return */
 const userModel = require('../models/user');
+const cbs = require('../tools/cbs');
 
 function getUserInfoEmail(req, res, callback) {
   userModel.User.find({ email: req.body.email },
     (err, user) => {
-      if (err) { callback(err); }
-      callback(user);
+      if (err) { callback(cbs.cbMsg(true, err)); }
+      cbs.cbMsg(false, user);
     });
 }
 
 function getUsers(data, callback) {
   userModel.User.find((err, users) => {
-    if (err) callback(err);
-    callback(users);
+    if (err) callback(cbs.cbMsg(true, err));
+    callback(cbs.cbMsg(true, users));
   });
 }
 
@@ -20,8 +21,8 @@ function getUsers(data, callback) {
 // POST parameter 'limit' sets the number of users returned.
 function getHighscore(req, res, callback) {
   userModel.User.find((err, users) => {
-    if (err) throw new Error(err);
-    callback(users);
+    if (err) callback(cbs.cbMsg(true, err));
+    cbs.cbMsg(false, users);
   }).sort({ game_score: -1 }).limit(parseInt(req.body.limit, 10));
 }
 
@@ -33,8 +34,8 @@ function removeUser(req, res, callback) {
   } else {
     userModel.User.findOneAndRemove({ email: req.body.email },
       (err) => {
-        if (err) { callback(err); }
-        callback('User removed (or not found)!');
+        if (err) cbs.cbMsg(true, err);
+        callback(cbs.cbMsg(false, 'User removed (or not found)!'));
       }).remove();
   }
 }

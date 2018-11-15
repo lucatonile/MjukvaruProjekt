@@ -5,25 +5,29 @@ const router = express.Router();
 
 router.get('/getusers/', (req, res) => {
   queries.getUsers(res, (result) => {
-    res.send(result);
+    if (result.error) res.send(result.message);
+    res.send(result.message);
   });
 });
 
 router.post('/getuserinfoemail/', (req, res) => {
   queries.getUserInfoEmail(req, res, (result) => {
-    res.send(result);
+    if (result.error) res.send(result.message);
+    res.send(result.message);
   });
 });
 
 router.post('/gethighscores/', (req, res) => {
   queries.getHighscore(req, res, (result) => {
-    res.send(result);
+    if (result.error) res.send(result.message);
+    res.send(result.message);
   });
 });
 
 router.post('/removeuser/', (req, res) => {
   queries.removeUser(req, res, (result) => {
-    res.send(result);
+    if (result.error) res.send(result.message);
+    res.send(result.message);
   });
 });
 
