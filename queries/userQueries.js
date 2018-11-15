@@ -26,14 +26,16 @@ function getHighscore(req, res, callback) {
 }
 
 function removeUser(req, res, callback) {
-  if (req.body.email !== undefined) {
+  if (req.body.email === undefined) {
+    callback('Email not provided!');
+  } else if (req.body.email === '') {
+    callback('Empty email provided!');
+  } else {
     userModel.User.findOneAndRemove({ email: req.body.email },
       (err) => {
         if (err) { callback(err); }
         callback('User removed (or not found)!');
       }).remove();
-  } else {
-    callback('Email not provided!');
   }
 }
 
