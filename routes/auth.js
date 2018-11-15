@@ -3,7 +3,7 @@ const queries = require('../queries/authQueries.js');
 
 const router = express.Router();
 
-router.post('/authenticate/', (req, res) => {
+router.post('/', (req, res) => {
   queries.authenticate(req, res, (result) => {
     res.send(result);
   });
