@@ -20,27 +20,28 @@ function addUserPost(req, res, callback) {
 }
 
 function authenticate(req, res, next) {
-  userModel.User.findOne({ email: req.body.email }, (err, userInfo) => {
-    if (err || req.body.password === null || req.body === null) {
-      console.log(`Req.body: ${req.body}`);
-      next(err);
-    } else if (bcrypt.compareSync(req.body.password, userInfo.password)) {
-      const token = jwt.sign({ id: userInfo.id }, req.app.get('secretKey'), { expiresIn: '1h' });
-
-      const userInfoNoPassword = {
-        game_score: userInfo.game_score,
-        _id: userInfo.id,
-        username: userInfo.username,
-        email: userInfo.email,
-        phone_number: userInfo.phone_number,
-        create_time: userInfo.create_time,
-      };
-
-      res.json({ status: 'success', message: 'user found!!!', data: { user: userInfoNoPassword, token } });
-    } else {
-      res.json({ status: 'error', message: 'Invalid email/password!!!', data: null });
-    }
-  }).select('+password');
+  if (req.body.email === undefined || req.body.password === undefined) {
+    res.json({ status: 'error', message: 'Email and/or password not provided!', data: null });
+  } else {
+    userModel.User.findOne({ email: req.body.email }, (err, userInfo) => {
+      if (err) {
+        next(err);
+      } else if (bcrypt.compareSync(req.body.password, userInfo.password)) {
+        const token = jwt.sign({ id: userInfo.id }, req.app.get('secretKey'), { expiresIn: '1h' });
+        const userInfoNoPassword = {
+          game_score: userInfo.game_score,
+          _id: userInfo.id,
+          username: userInfo.username,
+          email: userInfo.email,
+          phone_number: userInfo.phone_number,
+          create_time: userInfo.create_time,
+        };
+        res.json({ status: 'success', message: 'User found!', data: { user: userInfoNoPassword, token } });
+      } else {
+        res.json({ status: 'error', message: 'Invalid email/password!', data: null });
+      }
+    }).select('+password');
+  }
 }
 
 function validateUser(req, res, next) {
