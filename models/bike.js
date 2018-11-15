@@ -47,6 +47,7 @@ const bikeSchema = new mongoose.Schema({
   keywords: {
     male: Boolean,
     female: Boolean,
+    child: Boolean,
     sport: Boolean,
     tandem: Boolean,
     basket: Boolean,
