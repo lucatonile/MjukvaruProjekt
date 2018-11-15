@@ -21,7 +21,7 @@ function addUserPost(req, res, callback) {
 
 function authenticate(req, res, next) {
   userModel.User.findOne({ email: req.body.email }, (err, userInfo) => {
-    if (err) {
+    if (err || userInfo.password === null) {
       next(err);
     } else if (bcrypt.compareSync(req.body.password, userInfo.password)) {
       const token = jwt.sign({ id: userInfo.id }, req.app.get('secretKey'), { expiresIn: '1h' });
