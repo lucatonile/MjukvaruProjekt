@@ -1,12 +1,14 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 require('mongoose-type-email');
+const uniqueValidator = require('mongoose-unique-validator');
 
 /* User model */
 
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
+    unique: true,
     required: true,
     trim: true,
   },
@@ -32,6 +34,8 @@ const userSchema = new mongoose.Schema({
     default: 0,
   },
 });
+
+userSchema.plugin(uniqueValidator);
 
 // From: https://github.com/DDCSLearning/authenticationIntro/commit/33ac4662c38f7c3115615983cf60effe2ebbd7ed
 // hashing a password before saving it to the database

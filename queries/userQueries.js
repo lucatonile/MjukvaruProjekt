@@ -34,10 +34,10 @@ function addUserPost(req, res, callback) {
 
   user.save((err) => {
     if (err) {
-      callback(`Error: ${err}`);
-      if (err) throw new Error(err);
+      callback(err);
+    } else {
+      callback('Success in adding user via POST!');
     }
-    callback('Success in adding user via POST!');
   });
 }
 

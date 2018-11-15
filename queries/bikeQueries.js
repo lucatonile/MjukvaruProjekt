@@ -14,7 +14,7 @@ function getBikes(data, callback) {
   bikeModel.Bike.find((err, bikes) => {
     if (err) throw new Error(err);
     callback(bikes);
-  }).populate('submitter');
+  }).populate('submitter').populate('comments.author');
 }
 
 function getStolenBikes(data, callback) {
