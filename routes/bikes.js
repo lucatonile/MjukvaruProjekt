@@ -13,9 +13,9 @@ router.get('/', (req, res) => {
 
 router.post('/addbike/', (req, res) => {
   const data = req.body;
-  data.submitter = '5bed5b29e44a970ab4d42254';
-  data.brand = 'crescent';
-  data.type = 'STOLEN';
+  // data.submitter = '5bed5b29e44a970ab4d42254';
+  // data.brand = 'crescent';
+  // data.type = 'STOLEN';
 
   if (req.files !== undefined) {
     gcs.uploadImage(req, (result) => {
