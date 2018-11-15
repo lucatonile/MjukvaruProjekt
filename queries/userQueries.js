@@ -12,23 +12,6 @@ function getUserInfoEmail(req, res, callback) {
     });
 }
 
-function addUserPost(req, res, callback) {
-  const user = new userModel.User({
-    username: req.body.username,
-    email: req.body.email,
-    password: req.body.password,
-    phone_number: req.body.phone_number,
-  });
-
-  user.save((err) => {
-    if (err) {
-      callback(err);
-    } else {
-      callback('Success in adding user via POST!');
-    }
-  });
-}
-
 function getUsers(data, callback) {
   userModel.User.find((err, users) => {
     if (err) throw new Error(err);
@@ -46,7 +29,6 @@ function getHighscore(req, res, callback) {
 }
 
 module.exports = {
-  addUserPost,
   getUsers,
   getUserInfoEmail,
   getHighscore,

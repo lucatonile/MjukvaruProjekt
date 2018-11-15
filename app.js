@@ -26,10 +26,11 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
+
 const auth = require('./queries/authQueries');
 
 // Public routes
-app.use('/auth/', authRouter);
+app.use('/auth', authRouter);
 
 // Private routes
 app.use('/users', auth.validateUser, usersRouter);

@@ -2,6 +2,23 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const userModel = require('../models/user');
 
+function addUserPost(req, res, callback) {
+  const user = new userModel.User({
+    username: req.body.username,
+    email: req.body.email,
+    password: req.body.password,
+    phone_number: req.body.phone_number,
+  });
+
+  user.save((err) => {
+    if (err) {
+      callback(err);
+    } else {
+      callback('Success in adding user via POST!');
+    }
+  });
+}
+
 function authenticate(req, res, next) {
   userModel.User.findOne({ email: req.body.email }, (err, userInfo) => {
     if (err) {
@@ -40,4 +57,5 @@ function validateUser(req, res, next) {
 module.exports = {
   authenticate,
   validateUser,
+  addUserPost,
 };
