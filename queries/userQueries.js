@@ -22,7 +22,7 @@ function getUsers(data, callback) {
 function getHighscore(req, res, callback) {
   userModel.User.find((err, users) => {
     if (err) callback(cbs.cbMsg(true, err));
-    cbs.cbMsg(false, users);
+    callback(cbs.cbMsg(false, users));
   }).sort({ game_score: -1 }).limit(parseInt(req.body.limit, 10));
 }
 
