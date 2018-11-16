@@ -4,7 +4,7 @@ block content
   h1= title
   p Welcome to #{title}
   div
-    form(method="post", enctype="multipart\/form-data", action="upload")
+    form(method="post", enctype="multipart\/form-data", action="bikes/addbike")
       input(type="hidden", name="sid", value=sessionId)
 
       p Image:

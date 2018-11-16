@@ -1,5 +1,6 @@
 const express = require('express');
 const queries = require('../queries/bikeQueries');
+const gcs = require('../tools/gcs');
 
 const router = express.Router();
 
@@ -9,26 +10,41 @@ router.get('/', (req, res) => {
   res.send('handle db tasks');
 });
 
-router.get('/addbike/', (req) => {
-  queries.addBike(req, () => {
-  });
+router.post('/addbike/', (req, res) => {
+  const data = req.body;
+  // data.submitter = '5bed5b29e44a970ab4d42254';
+  // data.brand = 'crescent';
+  // data.type = 'STOLEN';
+
+  if (req.files !== undefined) {
+    gcs.uploadImage(req, (result) => {
+      if (result.error) {
+        res.send(result.message);
+      }
+      data.image_url = process.env.GCS_URL + result.message;
+
+      queries.addBike(data, (result_) => {
+        if (result_.error) res.send(result_.message);
+        res.send(result_.message);
+      });
+    });
+  } else {
+    queries.addBike(data, (result) => {
+      if (result.error) res.send(result.message);
+      res.send(result.message);
+    });
+  }
 });
 
-router.post('/removebike/', (req, res) => {
-  queries.removeBike(req, res, (result) => {
-    res.send(result);
-  });
-});
-
-router.get('/getbikes/', (req, res) => {
-  queries.getBikes(res, (result) => {
-    res.send(result);
-  });
+// Gör den här något?
+router.get('/removebike/', (req, res) => {
+  res.send('remove bike from db');
 });
 
 router.post('/getbikes/', (req, res) => {
   queries.getBikes(res, (result) => {
-    res.send(result);
+    if (result.error) res.send(result.message);
+    res.send(result.message);
   });
 });
 
@@ -40,13 +56,15 @@ router.post('/getcommentsforbike/', (req, res) => {
 
 router.get('/getstolenbikes/', (req, res) => {
   queries.getStolenBikes(res, (result) => {
-    res.send(result);
+    if (result.error) res.send(result.message);
+    res.send(result.message);
   });
 });
 
 router.get('/getfoundbikes/', (req, res) => {
   queries.getFoundBikes(res, (result) => {
-    res.send(result);
+    if (result.error) res.send(result.message);
+    res.send(result.message);
   });
 });
 

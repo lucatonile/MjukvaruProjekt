@@ -1,12 +1,8 @@
 require('dotenv').config();
 
-const express = require('express');
-
-const router = express.Router();
-
 const uuidv1 = require('uuid/v1');
 const { Storage } = require('@google-cloud/storage');
-const imageQueries = require('../queries/imageQueries');
+const cbs = require('./cbs');
 
 const storage = new Storage({
   projectId: process.env.GCS_PROJECTID,
@@ -15,14 +11,13 @@ const storage = new Storage({
 
 const bucketName = process.env.GCS_PROJECTID;
 
-router.post('/', (req, res) => {
+function uploadImage(req, callback) {
   const filename = uuidv1();
   const file = storage.bucket(bucketName).file(filename);
 
   // Verify that uploaded file is image
   if (req.files.image.mimetype.split('/')[0] !== 'image') {
-    res.end('File must be an image!');
-    return;
+    callback(cbs.cbMsg(true, 'File must be an image!'));
   }
 
   const metadata = {
@@ -38,11 +33,11 @@ router.post('/', (req, res) => {
   }, (err) => {
     if (!err) {
       // File written successfully.
-      imageQueries.addImage({ name: filename }, () => {
-        res.end(`${filename} uploaded to gcs and mongodb`);
-      });
+      callback(cbs.cbMsg(false, filename));
     }
   });
-});
+}
 
-module.exports = router;
+module.exports = {
+  uploadImage,
+};
