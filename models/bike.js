@@ -58,22 +58,6 @@ const bikeSchema = new mongoose.Schema({
     winter_tires: Boolean,
     light: Boolean,
   },
-  comments: [{
-    author: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-    },
-    body: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    date: {
-      type: Date,
-      default: Date.now,
-    },
-  }],
 });
 
 const bikeModel = mongoose.model('Bike', bikeSchema, 'bikes');

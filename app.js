@@ -6,11 +6,13 @@ const logger = require('morgan');
 const bodyParser = require('body-parser'); // Hokus pokus from StackOverflow to parse POST
 require('./db.js');
 const fileUpload = require('express-fileupload');
+
 const authRouter = require('./routes/auth');
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const bikesRouter = require('./routes/bikes');
 const uploadRouter = require('./routes/upload');
+const commentsRouter = require('./routes/comments');
 
 const app = express();
 
@@ -36,6 +38,7 @@ app.use('/auth', authRouter);
 app.use('/users', auth.validateUser, usersRouter);
 app.use('/bikes', auth.validateUser, bikesRouter);
 app.use('/upload', auth.validateUser, uploadRouter);
+app.use('/comments/', auth.validateUser, commentsRouter);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {

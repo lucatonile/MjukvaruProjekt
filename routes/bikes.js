@@ -32,6 +32,12 @@ router.post('/getbikes/', (req, res) => {
   });
 });
 
+router.post('/getcommentsforbike/', (req, res) => {
+  queries.getCommentsForBike(req, res, (result) => {
+    res.send(result);
+  });
+});
+
 router.get('/getstolenbikes/', (req, res) => {
   queries.getStolenBikes(res, (result) => {
     res.send(result);
@@ -43,6 +49,5 @@ router.get('/getfoundbikes/', (req, res) => {
     res.send(result);
   });
 });
-
 
 module.exports = router;

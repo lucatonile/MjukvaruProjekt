@@ -25,7 +25,7 @@ function getStolenBikes(data, callback) {
         if (err) throw new Error(err);
       }
       callback(bikes);
-    }).populate('submitter').populate('comments.author');
+    }).populate('submitter');
 }
 
 function getFoundBikes(data, callback) {
