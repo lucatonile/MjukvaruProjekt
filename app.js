@@ -59,7 +59,7 @@ app.use(bodyParser.urlencoded({ // to support URL-encoded bodies
   extended: true,
 }));
 
-// Should this be an environmental variable?
+// TODO Should this be an environmental variable?
 app.set('secretKey', 'nodeRestApi');
 
 module.exports = app;

@@ -31,4 +31,11 @@ router.post('/removeuser/', (req, res) => {
   });
 });
 
+router.post('/updateuser/', (req, res) => {
+  queries.updateUser(req, res, (result) => {
+    if (result.error) res.send(result.message);
+    res.send(result.message);
+  });
+});
+
 module.exports = router;

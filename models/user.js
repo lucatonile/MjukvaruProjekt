@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 require('mongoose-type-email');
@@ -44,6 +45,44 @@ userSchema.plugin(uniqueValidator);
 // hashing a password before saving it to the database
 userSchema.pre('save', function encrypt(next) {
   const user = this;
+
+  if (!user.isModified('password')) return next();
+
+  bcrypt.genSalt(saltRounds, (err, salt) => {
+    if (err) return next(err);
+
+    bcrypt.hash(user.password, salt, (err1, hash) => {
+      if (err1) return next(err1);
+
+      user.password = hash;
+      next();
+    });
+  });
+
+  // eslint-disable-next-line consistent-return
+  bcrypt.hash(user.password, saltRounds, (err, hash) => {
+    if (err) return next(err);
+    user.password = hash;
+    next();
+  });
+});
+
+userSchema.pre('update', function encrypt(next) {
+  const user = this;
+
+  if (!user.isModified('password')) return next();
+
+  bcrypt.genSalt(saltRounds, (err, salt) => {
+    if (err) return next(err);
+
+    bcrypt.hash(user.password, salt, (err1, hash) => {
+      if (err1) return next(err1);
+
+      user.password = hash;
+      next();
+    });
+  });
+
   // eslint-disable-next-line consistent-return
   bcrypt.hash(user.password, saltRounds, (err, hash) => {
     if (err) return next(err);

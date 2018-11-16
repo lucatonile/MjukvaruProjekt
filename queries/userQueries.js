@@ -1,4 +1,5 @@
 /* eslint-disable array-callback-return */
+const bcrypt = require('bcryptjs');
 const userModel = require('../models/user');
 const cbs = require('../tools/cbs');
 
@@ -40,9 +41,35 @@ function removeUser(req, res, callback) {
   }
 }
 
+function updateUser(req, res, callback) {
+  const userId = req.body.id;
+  const conditions = {
+    _id: userId,
+  };
+
+  const update = {
+    phone_number: req.body.phone_number,
+  };
+
+  // Only call hash function if a password was actually provided in the request.
+  if (req.body.password !== undefined) {
+    const secretpw = bcrypt.hashSync(req.body.password, bcrypt.genSaltSync(8), null);
+    update.password = secretpw;
+  }
+
+  userModel.User.findOneAndUpdate(conditions, update, (error, result) => {
+    if (error) {
+      callback(cbs.cbMsg(true, `Update failed: ${error}`));
+    } else {
+      callback(cbs.cbMsg(false, result));
+    }
+  });
+}
+
 module.exports = {
   getUsers,
   getUserInfoEmail,
   getHighscore,
   removeUser,
+  updateUser,
 };
