@@ -8,20 +8,29 @@ function addUserPost(req, res, callback) {
     email: req.body.email,
     password: req.body.password,
     phone_number: req.body.phone_number,
+    token: req.body.token,
   });
 
   user.save((err) => {
     if (err) {
       callback(err);
     } else {
-      callback('Success in adding user via POST!');
+      callback(user);
     }
   });
 }
 
+function updateToken(req, token, callback) {
+  userModel.User.findOneAndUpdate({ email: req.body.email }, { token }, { new: true },
+    (err, userInfo) => {
+      if (err) callback(err);
+      callback(userInfo);
+    });
+}
+
 function authenticate(req, res, next) {
   if (req.body.email === undefined || req.body.password === undefined) {
-    res.json({ status: 'error', message: 'Email and/or password not provided!', data: null });
+    next({ error: true, message: 'Email and/or password not provided!', data: null });
   } else {
     userModel.User.findOne({ email: req.body.email }, (err, userInfo) => {
       if (err) {
@@ -36,9 +45,9 @@ function authenticate(req, res, next) {
           phone_number: userInfo.phone_number,
           create_time: userInfo.create_time,
         };
-        res.json({ status: 'success', message: 'User found!', data: { user: userInfoNoPassword, token } });
+        next({ error: false, message: 'User found!', data: { user: userInfoNoPassword, token } });
       } else {
-        res.json({ status: 'error', message: 'Invalid email/password!', data: null });
+        next({ error: true, message: 'Invalid email/password!', data: null });
       }
     }).select('+password');
   }
@@ -62,4 +71,5 @@ module.exports = {
   authenticate,
   validateUser,
   addUserPost,
+  updateToken,
 };

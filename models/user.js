@@ -41,6 +41,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
+  token: String,
 });
 
 userSchema.plugin(uniqueValidator);
@@ -49,6 +50,7 @@ userSchema.plugin(uniqueValidator);
 // hashing a password before saving it to the database
 userSchema.pre('save', function encrypt(next) {
   const user = this;
+  console.log(saltRounds);
   bcrypt.genSalt(saltRounds, (err, salt) => {
     if (err) return next(err);
 

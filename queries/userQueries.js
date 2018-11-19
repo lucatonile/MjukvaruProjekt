@@ -18,6 +18,13 @@ function getUsers(data, callback) {
   });
 }
 
+function getUserInfoToken(token, callback) {
+  userModel.User.find({ token },
+    (err, user) => {
+      if (err) { callback(cbs.cbMsg(true, err)); }
+      callback(cbs.cbMsg(false, user));
+    });
+}
 // Returns highscore of users sorted by their descending score.
 // POST parameter 'limit' sets the number of users returned.
 function getHighscore(req, res, callback) {
@@ -41,15 +48,22 @@ function removeUser(req, res, callback) {
   }
 }
 
+function updateLocation(req, res, callback) {
+  userModel.User.findOneAndUpdate({ token: req.headers['x-access-token'] }, { location: req.body.location },
+    { new: true }, (err, userInfo) => {
+      if (err) callback(err);
+      callback(userInfo);
+    });
+}
+
 function updateUser(req, res, callback) {
   const userId = req.body.id;
+
   const conditions = {
-    _id: userId,
+    token: req.headers['x-access-token'],
   };
 
-  const update = {
-    phone_number: req.body.phone_number,
-  };
+  const update = req.body;
 
   // Only call hash function if a password was actually provided in the request.
   if (req.body.password !== undefined) {
@@ -65,7 +79,7 @@ function updateUser(req, res, callback) {
     }
   }
 
-  userModel.User.findOneAndUpdate(conditions, update, (error, result) => {
+  userModel.User.findOneAndUpdate(conditions, update, { new: true }, (error, result) => {
     if (error) {
       callback(cbs.cbMsg(true, `Update failed: ${error}`));
     } else {
@@ -77,7 +91,9 @@ function updateUser(req, res, callback) {
 module.exports = {
   getUsers,
   getUserInfoEmail,
+  getUserInfoToken,
   getHighscore,
   removeUser,
   updateUser,
+  updateLocation,
 };
