@@ -48,17 +48,7 @@ function removeUser(req, res, callback) {
   }
 }
 
-function updateLocation(req, res, callback) {
-  userModel.User.findOneAndUpdate({ token: req.headers['x-access-token'] }, { location: req.body.location },
-    { new: true }, (err, userInfo) => {
-      if (err) callback(err);
-      callback(userInfo);
-    });
-}
-
 function updateUser(req, res, callback) {
-  const userId = req.body.id;
-
   const conditions = {
     token: req.headers['x-access-token'],
   };
