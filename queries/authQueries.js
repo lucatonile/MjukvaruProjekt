@@ -2,13 +2,15 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const userModel = require('../models/user');
 
+// TODO: update this later
+const expireTime = '365d';
+
 function addUserPost(req, res, callback) {
   const user = new userModel.User({
     username: req.body.username,
     email: req.body.email,
     password: req.body.password,
     phone_number: req.body.phone_number,
-    token: req.body.token,
   });
 
   user.save((err) => {
@@ -36,7 +38,8 @@ function authenticate(req, res, next) {
       if (err) {
         next(err);
       } else if (bcrypt.compareSync(req.body.password, userInfo.password)) {
-        const token = jwt.sign({ id: userInfo.id }, req.app.get('secretKey'), { expiresIn: '1h' });
+        const token = jwt.sign({ id: userInfo.id }, req.app.get('secretKey'), { expiresIn: expireTime });
+
         const userInfoNoPassword = {
           game_score: userInfo.game_score,
           _id: userInfo.id,

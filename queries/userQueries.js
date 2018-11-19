@@ -18,13 +18,6 @@ function getUsers(data, callback) {
   });
 }
 
-function getUserInfoToken(token, callback) {
-  userModel.User.find({ token },
-    (err, user) => {
-      if (err) { callback(cbs.cbMsg(true, err)); }
-      callback(cbs.cbMsg(false, user));
-    });
-}
 // Returns highscore of users sorted by their descending score.
 // POST parameter 'limit' sets the number of users returned.
 function getHighscore(req, res, callback) {
@@ -40,7 +33,7 @@ function removeUser(req, res, callback) {
   } else if (req.body.email === '') {
     callback('Empty email provided!');
   } else {
-    userModel.User.findOneAndRemove({ email: req.body.email },
+    userModel.User.findOneAndRemove({ email: req.body.userId },
       (err) => {
         if (err) cbs.cbMsg(true, err);
         callback(cbs.cbMsg(false, 'User removed (or not found)!'));
@@ -50,10 +43,11 @@ function removeUser(req, res, callback) {
 
 function updateUser(req, res, callback) {
   const conditions = {
-    token: req.headers['x-access-token'],
+    _id: req.body.userId,
   };
 
   const update = req.body;
+  delete update._id;
 
   // Only call hash function if a password was actually provided in the request.
   if (req.body.password !== undefined) {
@@ -81,9 +75,7 @@ function updateUser(req, res, callback) {
 module.exports = {
   getUsers,
   getUserInfoEmail,
-  getUserInfoToken,
   getHighscore,
   removeUser,
   updateUser,
-  updateLocation,
 };

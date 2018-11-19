@@ -68,4 +68,10 @@ router.get('/getfoundbikes/', (req, res) => {
   });
 });
 
+router.get('/getmatchingbikes/', (req, res) => {
+  queries.getMatchingBikes(res, (result) => {
+    if (result.error) res.send(result.message);
+    res.send(result.message);
+  });
+});
 module.exports = router;
