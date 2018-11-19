@@ -57,6 +57,14 @@ function updateUser(req, res, callback) {
     update.password = secretpw;
   }
 
+  if (req.body.location !== undefined) {
+    if (req.body.location === '') {
+      // handle empty string
+    } else {
+      update.location = req.body.location;
+    }
+  }
+
   userModel.User.findOneAndUpdate(conditions, update, (error, result) => {
     if (error) {
       callback(cbs.cbMsg(true, `Update failed: ${error}`));

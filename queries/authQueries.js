@@ -44,6 +44,8 @@ function authenticate(req, res, next) {
   }
 }
 
+// Checks if the provided token is valid.
+// If it is correct the user Id is added to the parameter body.
 function validateUser(req, res, next) {
   jwt.verify(req.headers['x-access-token'], req.app.get('secretKey'), (err, decoded) => {
     if (err) {
