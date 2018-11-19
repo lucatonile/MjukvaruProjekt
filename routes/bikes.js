@@ -57,14 +57,14 @@ router.post('/getcommentsforbike/', (req, res) => {
 router.get('/getstolenbikes/', (req, res) => {
   queries.getStolenBikes(res, (result) => {
     if (result.error) res.send(result.message);
-    res.send(result.message);
+    res.send(JSON.stringify(result.message));
   });
 });
 
 router.get('/getfoundbikes/', (req, res) => {
   queries.getFoundBikes(res, (result) => {
     if (result.error) res.send(result.message);
-    res.json(result.message);
+    res.send(JSON.stringify(result.message));
   });
 });
 
