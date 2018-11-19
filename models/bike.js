@@ -6,6 +6,10 @@ const bikeSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
   },
+  title: {
+    type: String,
+    trim: true,
+  },
   active: {
     type: Boolean,
     default: true,
@@ -45,8 +49,10 @@ const bikeSchema = new mongoose.Schema({
     trim: true,
   },
   keywords: {
-    male: Boolean,
-    female: Boolean,
+    frame_type: {
+      type: String,
+      enum: ['MALE', 'FEMALE'],
+    },
     child: Boolean,
     sport: Boolean,
     tandem: Boolean,
@@ -58,6 +64,22 @@ const bikeSchema = new mongoose.Schema({
     winter_tires: Boolean,
     light: Boolean,
   },
+  comments: [{
+    author: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    body: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    date: {
+      type: Date,
+      default: Date.now,
+    },
+  }],
 });
 
 const bikeModel = mongoose.model('Bike', bikeSchema, 'bikes');
