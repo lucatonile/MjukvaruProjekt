@@ -31,8 +31,11 @@ function authenticate(req, res, next) {
     userModel.User.findOne({ email: req.body.email }, (err, userInfo) => {
       if (err) {
         next(err);
-      } else if (bcrypt.compareSync(req.body.password, userInfo.password)
-      && userInfo.password !== null) {
+      } else if (!userInfo || !userInfo.password) {
+        next({ error: 'No user with that email exists' });
+      } else if (!req.body.password) {
+        next({ error: 'Provided a password!' });
+      } else if (bcrypt.compareSync(req.body.password, userInfo.password)) {
         const token = jwt.sign({ id: userInfo.id }, req.app.get('secretKey'), { expiresIn: expireTime });
 
         // Return user but without password field.

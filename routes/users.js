@@ -7,6 +7,10 @@ router.get('/getuser/', (req, res) => {
   queries.getUser(req, res, (result) => { res.send(result.message); });
 });
 
+router.get('/getallusers/', (req, res) => {
+  queries.getAllUsers(req, res, (result) => { res.send(result.message); });
+});
+
 router.post('/getuserbyemail/', (req, res) => {
   queries.getUserInfoEmail(req, res, (result) => { res.send(result.message); });
 });

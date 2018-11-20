@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const userModel = require('../models/user');
 const cbs = require('../tools/cbs');
 
+// Returns the user document from the DB with the corresponding email provided in the body.
 function getUserInfoEmail(req, res, callback) {
   userModel.User.findOne({ email: req.body.email },
     (err, user) => {
@@ -16,10 +17,25 @@ function getUserInfoEmail(req, res, callback) {
     });
 }
 
+// Finds the authenticated user making the API call based on their provided token.
 function getUser(req, res, callback) {
-  userModel.User.findOne((err, users) => {
+  console.log(req.body.userId);
+  userModel.User.find({ _id: req.body.userId }, (err, users) => {
+    console.log(users);
     if (err) {
       callback(cbs.cbMsg(true, err));
+    } else {
+      callback(cbs.cbMsg(false, users));
+    }
+  });
+}
+
+// Returns all user documents in the database.
+function getAllUsers(req, res, callback) {
+  userModel.User.find((err, users) => {
+    if (err) callback(cbs.cbMsg(true, err));
+    if (!users || users === [] || users.length === 0) {
+      callback(cbs.cbMsg(true, { error: 'No users found!' }));
     } else {
       callback(cbs.cbMsg(false, users));
     }
@@ -35,6 +51,7 @@ function getHighscore(req, res, callback) {
   }).sort({ game_score: -1 }).limit(parseInt(req.body.limit, 10));
 }
 
+// Deletes the user associated with the provided email field of the body.
 function removeUser(req, res, callback) {
   if (req.body.email === undefined) {
     callback(cbs.cbMsg(true, { error: 'Email not provided!' }));
@@ -49,6 +66,7 @@ function removeUser(req, res, callback) {
   }
 }
 
+// General function for updating a user document with the provided paramters.
 function updateUser(req, res, callback) {
   const conditions = {
     _id: req.body.userId,
@@ -115,6 +133,7 @@ module.exports = {
   removeUser,
   updateUser,
   getUser,
+  getAllUsers,
   setUserLocation,
   getUserInfo,
 };
