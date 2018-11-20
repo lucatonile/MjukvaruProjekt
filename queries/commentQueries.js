@@ -2,6 +2,11 @@ const commentModel = require('../models/comment');
 const cbs = require('../tools/cbs');
 
 function getCommentsForBike(req, res, callback) {
+  callback(cbs.cbMsg(true, { message: 'Not yet implemented' }));
+  return null;
+
+  // This doesn't work due to circular dependencies
+  /*
   if (req.body.id === undefined) {
     callback('Bike id not provided!');
   } else if (req.body.id === '') {
@@ -10,6 +15,7 @@ function getCommentsForBike(req, res, callback) {
     const result = commentModel.Comment.find({ id: req.body.id }).populate('user').populate('bike');
     callback(result);
   }
+  */
 }
 
 function removeComment(req, res, callback) {

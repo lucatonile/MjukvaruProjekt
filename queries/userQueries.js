@@ -11,10 +11,13 @@ function getUserInfoEmail(req, res, callback) {
     });
 }
 
-function getUsers(data, callback) {
+function getUsersPost(data, callback) {
   userModel.User.find((err, users) => {
-    if (err) callback(cbs.cbMsg(true, err));
-    callback(cbs.cbMsg(true, users));
+    if (err) {
+      callback(cbs.cbMsg(true, err));
+    } else {
+      callback(cbs.cbMsg(false, users));
+    }
   });
 }
 
@@ -29,14 +32,14 @@ function getHighscore(req, res, callback) {
 
 function removeUser(req, res, callback) {
   if (req.body.email === undefined) {
-    callback('Email not provided!');
+    callback(cbs.cbMsg(true, { error: 'Email not provided!' }));
   } else if (req.body.email === '') {
-    callback('Empty email provided!');
+    callback(cbs.cbMsg(true, { error: 'Empty email provided!' }));
   } else {
     userModel.User.findOneAndRemove({ email: req.body.userId },
       (err) => {
         if (err) cbs.cbMsg(true, err);
-        callback(cbs.cbMsg(false, 'User removed (or not found)!'));
+        callback(cbs.cbMsg(false, { message: 'User removed (or not found)!' }));
       }).remove();
   }
 }
@@ -73,9 +76,9 @@ function updateUser(req, res, callback) {
 }
 
 module.exports = {
-  getUsers,
   getUserInfoEmail,
   getHighscore,
   removeUser,
   updateUser,
+  getUsersPost,
 };

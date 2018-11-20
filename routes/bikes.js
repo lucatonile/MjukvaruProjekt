@@ -36,9 +36,8 @@ router.post('/addbike/', (req, res) => {
   }
 });
 
-// Gör den här något?
-router.get('/removebike/', (req, res) => {
-  res.send('remove bike from db');
+router.post('/removebike/', (req, res) => {
+  queries.removeBike(req, res, (result) => { res.send(result.message); });
 });
 
 router.post('/getbikes/', (req, res) => {

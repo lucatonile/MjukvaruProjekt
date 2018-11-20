@@ -3,11 +3,8 @@ const queries = require('../queries/userQueries');
 
 const router = express.Router();
 
-router.get('/getusers/', (req, res) => {
-  queries.getUsers(res, (result) => {
-    if (result.error) res.send(result.message);
-    res.send(result.message);
-  });
+router.post('/getusers/', (req, res) => {
+  queries.getUsersPost(res, (result) => { res.send(result.message); });
 });
 
 router.post('/getuserinfoemail/', (req, res) => {
@@ -25,10 +22,7 @@ router.post('/gethighscores/', (req, res) => {
 });
 
 router.post('/removeuser/', (req, res) => {
-  queries.removeUser(req, res, (result) => {
-    if (result.error) res.send(result.message);
-    res.send(result.message);
-  });
+  queries.removeUser(req, res, (result) => { res.send(result.message); });
 });
 
 router.post('/updateuser/', (req, res) => {
