@@ -4,15 +4,15 @@ const userModel = require('../models/user');
 const cbs = require('../tools/cbs');
 
 function getUserInfoEmail(req, res, callback) {
-  userModel.User.find({ email: req.body.email },
+  userModel.User.findOne({ email: req.body.email },
     (err, user) => {
       if (err) { callback(cbs.cbMsg(true, err)); }
       callback(cbs.cbMsg(false, user));
     });
 }
 
-function getUsersPost(data, callback) {
-  userModel.User.find((err, users) => {
+function getUser(req, res, callback) {
+  userModel.User.findOne((err, users) => {
     if (err) {
       callback(cbs.cbMsg(true, err));
     } else {
@@ -109,7 +109,7 @@ module.exports = {
   getHighscore,
   removeUser,
   updateUser,
-  getUsersPost,
+  getUser,
   setUserLocation,
   getUserInfo,
 };

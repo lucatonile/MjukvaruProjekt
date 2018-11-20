@@ -40,7 +40,7 @@ router.post('/removebike/', (req, res) => {
   queries.removeBike(req, res, (result) => { res.send(result.message); });
 });
 
-router.post('/getbikes/', (req, res) => {
+router.get('/getbikes/', (req, res) => {
   queries.getBikes(res, (result) => {
     if (result.error) res.send(result.message);
     res.send(result.message);
