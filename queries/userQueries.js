@@ -16,7 +16,7 @@ function getUserInfoEmail(req, res, callback) {
     });
 }
 
-function getUser(data, callback) {
+function getUser(req, res, callback) {
   userModel.User.findOne((err, users) => {
     if (err) {
       callback(cbs.cbMsg(true, err));
