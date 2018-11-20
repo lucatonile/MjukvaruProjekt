@@ -35,6 +35,9 @@ function authenticate(req, res, next) {
     next({ error: true, message: 'Email and/or password not provided!', data: null });
   } else {
     userModel.User.findOne({ email: req.body.email }, (err, userInfo) => {
+      if (req.body.email === null || userInfo.password === null) {
+        next({ error: true, message: 'Password null somewhere', data: null });
+      }
       if (err) {
         next(err);
       } else if (bcrypt.compareSync(req.body.password, userInfo.password)) {
