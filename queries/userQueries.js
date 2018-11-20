@@ -75,10 +75,41 @@ function updateUser(req, res, callback) {
   });
 }
 
+function setUserLocation(req, res, callback) {
+  if (req.body.location === '' || req.body.location === undefined) {
+    callback(cbs.cbMsg(true, { error: 'Provide a location!' }));
+  }
+
+  // Update defines what fields to be changed in the database document.
+  const update = {
+    location: req.body.location,
+  };
+
+  userModel.User.findByIdAndUpdate(
+    req.body.userId,
+    update,
+    { new: true },
+    (err, location) => {
+      if (err) callback(cbs.cbMsg(true, err));
+      callback(cbs.cbMsg(false, location));
+    },
+  );
+}
+
+// Finds the authenticated user and sends the user information. Based on provided token.
+function getUserInfo(req, res, callback) {
+  userModel.User.findOne({ _id: req.body.userId }, (err, users) => {
+    if (err) callback(cbs.cbMsg(true, err));
+    callback(cbs.cbMsg(false, users));
+  });
+}
+
 module.exports = {
   getUserInfoEmail,
   getHighscore,
   removeUser,
   updateUser,
   getUsersPost,
+  setUserLocation,
+  getUserInfo,
 };

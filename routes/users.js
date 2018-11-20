@@ -14,6 +14,14 @@ router.post('/getuserinfoemail/', (req, res) => {
   });
 });
 
+router.post('/getuserinfo/', (req, res) => {
+  queries.getUserInfo(req, res, (result) => {
+    console.log('getting user info in router');
+    if (result.error) res.send(result.message);
+    res.send(result.message);
+  });
+});
+
 router.post('/gethighscores/', (req, res) => {
   queries.getHighscore(req, res, (result) => {
     if (result.error) res.send(result.message);
@@ -30,6 +38,10 @@ router.post('/updateuser/', (req, res) => {
     if (result.error) res.send(result.message);
     res.send(result.message);
   });
+});
+
+router.post('/setuserlocation/', (req, res) => {
+  queries.setUserLocation(req, res, (result) => { res.send(result.message); });
 });
 
 module.exports = router;
