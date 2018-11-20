@@ -100,21 +100,26 @@ function setUserLocation(req, res, callback) {
   if (req.body.location === '' || req.body.location === undefined) {
     callback(cbs.cbMsg(true, { error: 'Provide a location!' }));
   }
+  console.log(req.body.userId);
+  const conditions = { _id: req.body.userId };
 
   // Update defines what fields to be changed in the database document.
   const update = {
     location: req.body.location,
   };
 
-  userModel.User.findByIdAndUpdate(
-    req.body.userId,
-    update,
-    { new: true },
-    (err, location) => {
-      if (err) callback(cbs.cbMsg(true, err));
-      callback(cbs.cbMsg(false, location));
-    },
-  );
+  // This option new: true ensures the updated user document is returned.
+  const options = { new: true };
+
+  userModel.User.findOneAndUpdate(conditions, update, options, (error, doc) => {
+    if (error) {
+      callback(cbs.cbMsg(true, error));
+    } else if (!doc) {
+      callback(cbs.cbMsg(true, { error: 'No document was found' }));
+    } else {
+      callback(cbs.cbMsg(false, doc));
+    }
+  });
 }
 
 // Finds the authenticated user and sends the user information. Based on provided token.
