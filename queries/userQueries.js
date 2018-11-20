@@ -87,11 +87,13 @@ function updateUser(req, res, callback) {
     }
   }
 
-  userModel.User.findOneAndUpdate(conditions, update, { new: true }, (error, result) => {
+  userModel.User.findOneAndUpdate(conditions, update, { new: true }, (error, updatedUserRecord) => {
     if (error) {
       callback(cbs.cbMsg(true, `Update failed: ${error}`));
+    } else if (!updatedUserRecord) {
+      callback(cbs.cbMsg(true, { error: 'No matching user was found' }));
     } else {
-      callback(cbs.cbMsg(false, result));
+      callback(cbs.cbMsg(false, updatedUserRecord));
     }
   });
 }
@@ -100,7 +102,6 @@ function setUserLocation(req, res, callback) {
   if (req.body.location === '' || req.body.location === undefined) {
     callback(cbs.cbMsg(true, { error: 'Provide a location!' }));
   }
-  console.log(req.body.userId);
   const conditions = { _id: req.body.userId };
 
   // Update defines what fields to be changed in the database document.
@@ -112,11 +113,13 @@ function setUserLocation(req, res, callback) {
   const options = { new: true };
 
   userModel.User.findOneAndUpdate(conditions, update, options, (error, doc) => {
+    console.log(doc.phone_number);
     if (error) {
       callback(cbs.cbMsg(true, error));
     } else if (!doc) {
       callback(cbs.cbMsg(true, { error: 'No document was found' }));
     } else {
+      console.log(doc);
       callback(cbs.cbMsg(false, doc));
     }
   });
