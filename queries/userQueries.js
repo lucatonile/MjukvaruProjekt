@@ -36,7 +36,7 @@ function removeUser(req, res, callback) {
   } else if (req.body.email === '') {
     callback(cbs.cbMsg(true, { error: 'Empty email provided!' }));
   } else {
-    userModel.User.findOneAndRemove({ email: req.body.userId },
+    userModel.User.findOneAndRemove({ email: req.body.email },
       (err) => {
         if (err) cbs.cbMsg(true, err);
         callback(cbs.cbMsg(false, { message: 'User removed (or not found)!' }));
