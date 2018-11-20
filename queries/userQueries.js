@@ -6,12 +6,17 @@ const cbs = require('../tools/cbs');
 function getUserInfoEmail(req, res, callback) {
   userModel.User.findOne({ email: req.body.email },
     (err, user) => {
-      if (err) { callback(cbs.cbMsg(true, err)); }
-      callback(cbs.cbMsg(false, user));
+      if (err) {
+        callback(cbs.cbMsg(true, err));
+      } else if (!user) {
+        callback(cbs.cbMsg(true, { error: `No user by email: ${req.body.email} found.` }));
+      } else {
+        callback(cbs.cbMsg(false, user));
+      }
     });
 }
 
-function getUser(req, res, callback) {
+function getUser(data, callback) {
   userModel.User.findOne((err, users) => {
     if (err) {
       callback(cbs.cbMsg(true, err));

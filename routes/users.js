@@ -7,11 +7,8 @@ router.get('/getuser/', (req, res) => {
   queries.getUser(req, res, (result) => { res.send(result.message); });
 });
 
-router.get('/getuserbyemail/', (req, res) => {
-  queries.getUserInfoEmail(req, res, (result) => {
-    if (result.error) res.send(result.message);
-    res.send(result.message);
-  });
+router.post('/getuserbyemail/', (req, res) => {
+  queries.getUserInfoEmail(req, res, (result) => { res.send(result.message); });
 });
 
 router.post('/gethighscores/', (req, res) => {
