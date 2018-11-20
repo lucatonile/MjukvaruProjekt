@@ -39,7 +39,7 @@ function authenticate(req, res, next) {
       if (err) {
         next(err);
       } else if (bcrypt.compareSync(req.body.password, userInfo.password)) {
-        const token = jwt.sign({ id: userInfo.id }, req.app.get('secretKey'), { expiresIn: '1h' });
+        const token = jwt.sign({ id: userInfo.id }, req.app.get('secretKey'), { expiresIn: expireTime });
         const userInfoNoPassword = {
           game_score: userInfo.game_score,
           _id: userInfo.id,
