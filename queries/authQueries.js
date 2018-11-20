@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const userModel = require('../models/user');
+const cb = require('../tools/cbs');
 
 // TODO: update this later
 const expireTime = '365d';
@@ -17,7 +18,7 @@ function addUserPost(req, res, callback) {
     if (err) {
       callback(err);
     } else {
-      callback(user);
+      callback(cb.cbMsg(false, { message: `User ${req.body.username} added!` }));
     }
   });
 }
@@ -32,17 +33,13 @@ function updateToken(req, token, callback) {
 
 function authenticate(req, res, next) {
   if (req.body.email === undefined || req.body.password === undefined) {
-    next({ error: true, message: 'Email and/or password not provided!', data: null });
+    res.json({ status: 'error', message: 'Email and/or password not provided!', data: null });
   } else {
     userModel.User.findOne({ email: req.body.email }, (err, userInfo) => {
-      if (req.body.email === null || userInfo.password === null) {
-        next({ error: true, message: 'Password null somewhere', data: null });
-      }
       if (err) {
         next(err);
       } else if (bcrypt.compareSync(req.body.password, userInfo.password)) {
-        const token = jwt.sign({ id: userInfo.id }, req.app.get('secretKey'), { expiresIn: expireTime });
-
+        const token = jwt.sign({ id: userInfo.id }, req.app.get('secretKey'), { expiresIn: '1h' });
         const userInfoNoPassword = {
           game_score: userInfo.game_score,
           _id: userInfo.id,
@@ -51,9 +48,9 @@ function authenticate(req, res, next) {
           phone_number: userInfo.phone_number,
           create_time: userInfo.create_time,
         };
-        next({ error: false, message: 'User found!', data: { user: userInfoNoPassword, token } });
+        res.json({ status: 'success', message: 'User found!', data: { user: userInfoNoPassword, token } });
       } else {
-        next({ error: true, message: 'Invalid email/password!', data: null });
+        res.json({ status: 'error', message: 'Invalid email/password!', data: null });
       }
     }).select('+password');
   }
