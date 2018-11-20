@@ -43,6 +43,7 @@ const bikeSchema = new mongoose.Schema({
   location: {
     lat: Number,
     long: Number,
+    description: String,
   },
   image_url: {
     type: String,
