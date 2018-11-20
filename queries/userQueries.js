@@ -19,9 +19,7 @@ function getUserInfoEmail(req, res, callback) {
 
 // Finds the authenticated user making the API call based on their provided token.
 function getUser(req, res, callback) {
-  console.log(req.body.userId);
-  userModel.User.find({ _id: req.body.userId }, (err, users) => {
-    console.log(users);
+  userModel.User.findOne({ _id: req.body.userId }, (err, users) => {
     if (err) {
       callback(cbs.cbMsg(true, err));
     } else {
