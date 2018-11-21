@@ -14,15 +14,17 @@ router.get('/', (req, res) => {
 router.post('/addbike/', (req, res) => {
   const data = req.body;
 
-  if (req.files !== undefined) {
+  if (req.files !== undefined && req.files !== null) {
     gcs.uploadImage(req, (result) => {
       if (result.error) res.send(result.message);
-      data.image_url = process.env.GCS_URL + result.message;
+      else {
+        data.image_url = process.env.GCS_URL + result.message;
 
-      queries.addBike(data, (result_) => {
-        if (result_.error) res.send(result_.message);
-        else res.send(result_.message);
-      });
+        queries.addBike(data, (result_) => {
+          if (result_.error) res.send(result_.message);
+          else res.send(result_.message);
+        });
+      }
     });
   } else {
     queries.addBike(data, (result) => {
