@@ -3,18 +3,16 @@ const queries = require('../queries/userQueries');
 
 const router = express.Router();
 
-router.get('/getusers/', (req, res) => {
-  queries.getUsers(res, (result) => {
-    if (result.error) res.send(result.message);
-    else res.send(result.message);
-  });
+router.get('/getuser/', (req, res) => {
+  queries.getUser(req, res, (result) => { res.send(result.message); });
 });
 
-router.post('/getuserinfoemail/', (req, res) => {
-  queries.getUserInfoEmail(req, res, (result) => {
-    if (result.error) res.send(result.message);
-    else res.send(result.message);
-  });
+router.get('/getallusers/', (req, res) => {
+  queries.getAllUsers(req, res, (result) => { res.send(result.message); });
+});
+
+router.post('/getuserbyemail/', (req, res) => {
+  queries.getUserInfoEmail(req, res, (result) => { res.send(result.message); });
 });
 
 router.post('/gethighscores/', (req, res) => {
@@ -25,10 +23,7 @@ router.post('/gethighscores/', (req, res) => {
 });
 
 router.post('/removeuser/', (req, res) => {
-  queries.removeUser(req, res, (result) => {
-    if (result.error) res.send(result.message);
-    else res.send(result.message);
-  });
+  queries.removeUser(req, res, (result) => { res.send(result.message); });
 });
 
 router.post('/updateuser/', (req, res) => {
@@ -36,6 +31,10 @@ router.post('/updateuser/', (req, res) => {
     if (result.error) res.send(result.message);
     else res.send(result.message);
   });
+});
+
+router.post('/setuserlocation/', (req, res) => {
+  queries.setUserLocation(req, res, (result) => { res.send(result.message); });
 });
 
 module.exports = router;

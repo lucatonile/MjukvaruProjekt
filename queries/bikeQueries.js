@@ -137,8 +137,23 @@ function getMatchingBikes(data, callback) {
   });
 }
 
+function removeBike(req, res, callback) {
+  if (req.body.bikeId === undefined) {
+    callback(cbs.cbMsg(true, { error: 'bikeId not provided!' }));
+  } else if (req.body.bikeId === '') {
+    callback(cbs.cbMsg(true, { error: 'Empty bikeId provided!' }));
+  } else {
+    bikeModel.Bike.findOneAndRemove({ email: req.body.bikeId },
+      (err) => {
+        if (err) cbs.cbMsg(true, err);
+        callback(cbs.cbMsg(false, { message: 'Bike removed (or not found)!' }));
+      }).remove();
+  }
+}
+
 module.exports = {
   addBike,
+  removeBike,
   getBikes,
   getBikeWithId,
   getBikesWithIdsOrdered,
