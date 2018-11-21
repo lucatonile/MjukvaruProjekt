@@ -63,6 +63,12 @@ router.get('/getfoundbikes/', (req, res) => {
   });
 });
 
+router.post('/updatebike/', (req, res) => {
+  queries.updateBike(req, (result) => {
+    if (result.error) res.send(result.message);
+    else res.send(result.message);
+  });
+});
 
 // TODO: only showing results above a certain threshold of similarity to uploaded bike
 router.get('/getmatchingbikes/', (req, res) => {
