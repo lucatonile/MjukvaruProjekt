@@ -113,13 +113,11 @@ function setUserLocation(req, res, callback) {
   const options = { new: true };
 
   userModel.User.findOneAndUpdate(conditions, update, options, (error, doc) => {
-    console.log(doc.phone_number);
     if (error) {
       callback(cbs.cbMsg(true, error));
     } else if (!doc) {
       callback(cbs.cbMsg(true, { error: 'No document was found' }));
     } else {
-      console.log(doc);
       callback(cbs.cbMsg(false, doc));
     }
   });
