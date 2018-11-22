@@ -45,9 +45,31 @@ router.get('/getbikes/', (req, res) => {
   });
 });
 
-router.post('/getcommentsforbike/', (req, res) => {
-  queries.getCommentsForBike(req, res, (result) => {
-    res.send(result);
+router.post('/addcomment/', (req, res) => {
+  queries.addComment(req, (result) => {
+    if (result.error) res.send(result.message);
+    else res.send(result.message);
+  });
+});
+
+router.post('/removecomment/', (req, res) => {
+  queries.removeComment(req, (result) => {
+    if (result.error) res.send(result.message);
+    else res.send(result.message);
+  });
+});
+
+router.post('/editcomment/', (req, res) => {
+  queries.editComment(req, (result) => {
+    if (result.error) res.send(result.message);
+    else res.send(result.message);
+  });
+});
+
+router.get('/getcomments/', (req, res) => {
+  queries.getComments(req, (result) => {
+    if (result.error) res.send(result.message);
+    else res.send(result.message);
   });
 });
 
