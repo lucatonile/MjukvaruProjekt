@@ -59,6 +59,16 @@ function getBikesWithIdsOrdered(ids, callback) {
   });
 }
 
+// Return a bike with the provided bikeId.
+function getBike(req, res, callback) {
+  console.log(req.body);
+  bikeModel.Bike.findOne({ _id: req.body.bikeId }, (err, bike) => {
+    if (err) callback(cbs.cbMsg(true, err));
+    else if (!bike) callback(cbs.cbMsg(false, { message: 'Bike not found' }));
+    else callback(cbs.cbMsg(false, bike));
+  }).populate('submitter').populate('comments.author');
+}
+
 function getBikes(data, callback) {
   bikeModel.Bike.find((err, bikes) => {
     if (err) callback(cbs.cbMsg(true, err));
@@ -175,7 +185,7 @@ function removeBike(req, res, callback) {
   } else if (req.body.bikeId === '') {
     callback(cbs.cbMsg(true, { error: 'Empty bikeId provided!' }));
   } else {
-    bikeModel.Bike.findOneAndRemove({ email: req.body.bikeId },
+    bikeModel.Bike.findOneAndRemove({ _id: req.body.bikeId },
       (err) => {
         if (err) cbs.cbMsg(true, err);
         callback(cbs.cbMsg(false, { message: 'Bike removed (or not found)!' }));
@@ -255,6 +265,7 @@ module.exports = {
   addBike,
   removeBike,
   updateBike,
+  getBike,
   getBikes,
   getMyBikes,
   getBikesWithIdsOrdered,
