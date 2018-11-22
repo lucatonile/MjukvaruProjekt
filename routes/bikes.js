@@ -14,15 +14,17 @@ router.get('/', (req, res) => {
 router.post('/addbike/', (req, res) => {
   const data = req.body;
 
-  if (req.files !== undefined) {
+  if (req.files !== undefined && req.files !== null) {
     gcs.uploadImage(req, (result) => {
       if (result.error) res.send(result.message);
-      data.image_url = process.env.GCS_URL + result.message;
+      else {
+        data.image_url = process.env.GCS_URL + result.message;
 
-      queries.addBike(data, (result_) => {
-        if (result_.error) res.send(result_.message);
-        else res.send(result_.message);
-      });
+        queries.addBike(data, (result_) => {
+          if (result_.error) res.send(result_.message);
+          else res.send(result_.message);
+        });
+      }
     });
   } else {
     queries.addBike(data, (result) => {
@@ -63,6 +65,12 @@ router.get('/getfoundbikes/', (req, res) => {
   });
 });
 
+router.post('/updatebike/', (req, res) => {
+  queries.updateBike(req, (result) => {
+    if (result.error) res.send(result.message);
+    else res.send(result.message);
+  });
+});
 
 // TODO: only showing results above a certain threshold of similarity to uploaded bike
 router.get('/getmatchingbikes/', (req, res) => {

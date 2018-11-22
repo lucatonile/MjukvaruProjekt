@@ -18,11 +18,16 @@ function addBike(data, callback) {
   });
 }
 
-function getBikeWithId(id, callback) {
-  bikeModel.Bike.find(id, (err, bikes) => {
-    if (err) callback(cbs.cbMsg(true, err));
-    else callback(cbs.cbMsg(false, bikes));
-  }).populate('submitter').populate('comments.author');
+function updateBike(req, callback) {
+  if (req.body.type !== undefined && (req.body.type !== 'FOUND' && req.body.type !== 'STOLEN')) {
+    callback(cbs.cbMsg(true, 'type must be specified as either STOLEN or FOUND'));
+  } else {
+    bikeModel.Bike.findOneAndUpdate({ _id: req.body.id }, req.body, { new: true }, (err, bike) => {
+      if (err) callback(cbs.cbMsg(true, err));
+      else if (bike === null) callback(cbs.cbMsg(false, `bike with id ${req.body.id} was not found in the db!`));
+      else callback(cbs.cbMsg(false, bike));
+    });
+  }
 }
 
 function getBikesWithIdsOrdered(ids, callback) {
@@ -158,8 +163,8 @@ function removeBike(req, res, callback) {
 module.exports = {
   addBike,
   removeBike,
+  updateBike,
   getBikes,
-  getBikeWithId,
   getBikesWithIdsOrdered,
   getStolenBikes,
   getFoundBikes,
