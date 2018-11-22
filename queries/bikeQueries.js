@@ -7,29 +7,30 @@ const reverseGeolocation = require('../tools/reverseGeolocation');
 // Limit for getMatchingBikes results shown
 const matchLimit = 5;
 
-function addBike(data, callback) {
+function addBike(req, res, callback) {
   // Model requires submitter Id
-  const bikeData = data;
-  bikeData.submitter = data.userId;
+  const bikeData = req.body;
+  bikeData.submitter = req.body.userId;
+  const locations = reverseGeolocation.getLocation(req.body.lat, req.body.long);
 
-  const locations = reverseGeolocation.getLocation(data.lat, data.long);
+  if (locations.error !== undefined) {
+    callback(cbs.cbMsg(true, locations.error));
+    res.status(400).send();
+  } else {
+    bikeData.location = {
+      lat: req.body.lat,
+      long: req.body.long,
+      city: locations.city,
+      neighborhood: locations.neighborhood,
+      street: locations.street,
+    };
 
-  bikeData.location = {
-    lat: data.lat,
-    long: data.long,
-    city: locations.city,
-    neighborhood: locations.neighborhood,
-    street: locations.street,
-  };
-
-  console.log(`Set location to: ${JSON.stringify(bikeData.location)}`);
-  console.log(bikeData);
-
-  const bike = new bikeModel.Bike(bikeData);
-  bike.save((err) => {
-    if (err) callback(cbs.cbMsg(true, err));
-    else callback(cbs.cbMsg(false, { message: 'Success in adding bike!' }));
-  });
+    const bike = new bikeModel.Bike(bikeData);
+    bike.save((err) => {
+      if (err) callback(cbs.cbMsg(true, err));
+      else callback(cbs.cbMsg(false, { message: 'Success in adding bike!' }));
+    });
+  }
 }
 
 function updateBike(req, callback) {

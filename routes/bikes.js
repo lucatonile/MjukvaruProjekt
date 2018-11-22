@@ -33,7 +33,7 @@ router.post('/addbike/', (req, res) => {
       }
     });
   } else {
-    queries.addBike(data, (result) => {
+    queries.addBike(req, res, (result) => {
       if (result.error) res.send(result.message);
       else res.send(result.message);
     });
