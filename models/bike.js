@@ -6,6 +6,10 @@ const bikeSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
   },
+  create_time: {
+    type: Date,
+    default: Date.now,
+  },
   title: {
     type: String,
     trim: true,
