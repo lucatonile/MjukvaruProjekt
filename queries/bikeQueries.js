@@ -2,6 +2,7 @@
 /* eslint no-underscore-dangle: 0 */
 const bikeModel = require('../models/bike');
 const cbs = require('../tools/cbs');
+const reverseGeolocation = require('../tools/reverseGeolocation');
 
 // Limit for getMatchingBikes results shown
 const matchLimit = 5;
@@ -10,6 +11,19 @@ function addBike(data, callback) {
   // Model requires submitter Id
   const bikeData = data;
   bikeData.submitter = data.userId;
+
+  const locations = reverseGeolocation.getLocation(data.lat, data.long);
+
+  bikeData.location = {
+    lat: data.lat,
+    long: data.long,
+    city: locations.city,
+    neighborhood: locations.neighborhood,
+    street: locations.street,
+  };
+
+  console.log(`Set location to: ${JSON.stringify(bikeData.location)}`);
+  console.log(bikeData);
 
   const bike = new bikeModel.Bike(bikeData);
   bike.save((err) => {
