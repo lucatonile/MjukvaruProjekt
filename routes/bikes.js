@@ -51,6 +51,13 @@ router.get('/getbikes/', (req, res) => {
   });
 });
 
+router.get('/getmybikes/', (req, res) => {
+  queries.getMyBikes(req, res, (result) => {
+    if (result.error) res.send(result.message);
+    else res.send(result.message);
+  });
+});
+
 router.post('/addcomment/', (req, res) => {
   queries.addComment(req, (result) => {
     if (result.error) res.send(result.message);

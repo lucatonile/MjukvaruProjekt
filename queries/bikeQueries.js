@@ -66,6 +66,14 @@ function getBikes(data, callback) {
   }).populate('submitter').populate('comments.author');
 }
 
+function getMyBikes(req, res, callback) {
+  console.log(req.body);
+  bikeModel.Bike.find({ submitter: req.body.userId }, (err, bikes) => {
+    if (err) callback(cbs.cbMsg(true, err));
+    else callback(cbs.cbMsg(false, bikes));
+  }).populate('submitter').populate('comments.author');
+}
+
 function getStolenBikes(data, callback) {
   bikeModel.Bike.find({ type: 'STOLEN', active: true }, (err, bikes) => {
     if (err) callback(cbs.cbMsg(true, err));
@@ -244,6 +252,7 @@ module.exports = {
   removeBike,
   updateBike,
   getBikes,
+  getMyBikes,
   getBikesWithIdsOrdered,
   getStolenBikes,
   getFoundBikes,
