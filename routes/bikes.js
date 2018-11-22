@@ -11,6 +11,12 @@ router.get('/', (req, res) => {
   res.send('handle db tasks');
 });
 
+router.post('/preaddbike/', (req, res) => {
+  if (req.files !== undefined && req.files !== null) {
+    res.send('File was retrieved!');
+  } else res.send('No file was retrieved');
+});
+
 router.post('/addbike/', (req, res) => {
   const data = req.body;
 
@@ -45,9 +51,31 @@ router.get('/getbikes/', (req, res) => {
   });
 });
 
-router.post('/getcommentsforbike/', (req, res) => {
-  queries.getCommentsForBike(req, res, (result) => {
-    res.send(result);
+router.post('/addcomment/', (req, res) => {
+  queries.addComment(req, (result) => {
+    if (result.error) res.send(result.message);
+    else res.send(result.message);
+  });
+});
+
+router.post('/removecomment/', (req, res) => {
+  queries.removeComment(req, (result) => {
+    if (result.error) res.send(result.message);
+    else res.send(result.message);
+  });
+});
+
+router.post('/editcomment/', (req, res) => {
+  queries.editComment(req, (result) => {
+    if (result.error) res.send(result.message);
+    else res.send(result.message);
+  });
+});
+
+router.get('/getcomments/', (req, res) => {
+  queries.getComments(req, (result) => {
+    if (result.error) res.send(result.message);
+    else res.send(result.message);
   });
 });
 

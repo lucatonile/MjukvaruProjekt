@@ -11,7 +11,6 @@ const authRouter = require('./routes/auth');
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const bikesRouter = require('./routes/bikes');
-const commentsRouter = require('./routes/comments');
 
 const app = express();
 
@@ -36,7 +35,6 @@ app.use('/auth', authRouter);
 // Private routes
 app.use('/users', auth.validateUser, usersRouter);
 app.use('/bikes', auth.validateUser, bikesRouter);
-app.use('/comments', auth.validateUser, commentsRouter);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {

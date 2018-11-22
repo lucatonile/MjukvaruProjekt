@@ -174,6 +174,70 @@ function removeBike(req, res, callback) {
   }
 }
 
+function addComment(req, callback) {
+  if (req.body.bikeId === undefined) {
+    callback(cbs.cbMsg(true, 'bikeId not provided!'));
+  } else if (req.body.bikeId === '') {
+    callback(cbs.cbMsg(true, 'Empty bikeId provided!'));
+  } else {
+    const comment = {
+      author: req.body.userId,
+      body: req.body.body,
+    };
+
+    bikeModel.Bike.findOneAndUpdate({ _id: req.body.bikeId }, { $push: { comments: comment } },
+      { upsert: false, new: true }, (err, result) => {
+        if (err) callback(cbs.cbMsg(true, err));
+        else if (result === null) callback(cbs.cbMsg(true, 'Bike was not found in the database!'));
+        else callback(cbs.cbMsg(false, result.comments[result.comments.length - 1]));
+      });
+  }
+}
+
+function removeComment(req, callback) {
+  bikeModel.Bike.updateOne(
+    { _id: req.body.bikeId },
+    { $pull: { comments: { _id: req.body.commentId } } }, (err, result) => {
+      if (err) callback(cbs.cbMsg(true, err));
+      else if (result.nModified === 0) callback(cbs.cbMsg(true, 'Comment was not removed! Perhaps a non existant bike/comment id was given'));
+      else callback(cbs.cbMsg(false, 'Removed comment!'));
+    },
+  );
+}
+
+function editComment(req, callback) {
+  bikeModel.Bike.updateOne(
+    {
+      _id: req.body.bikeId,
+      'comments._id': req.body.commentId,
+    },
+    {
+      $set: {
+        'comments.$.body': req.body.body,
+      },
+    }, (err, result) => {
+      if (err) callback(cbs.cbMsg(true, err));
+      else if (result.nModified === 0) callback(cbs.cbMsg(true, 'No changes made! Perhaps a non existant bike/comment id was given'));
+      else callback(cbs.cbMsg(false, 'Edited comment!'));
+    },
+  );
+}
+
+function getComments(req, callback) {
+  if (req.body.bikeId === undefined) {
+    callback(cbs.cbMsg(true, 'bikeId not provided!'));
+  } else if (req.body.bikeId === '') {
+    callback(cbs.cbMsg(true, 'Empty bikeId provided!'));
+  } else {
+    bikeModel.Bike.findOne({ _id: req.body.bikeId }, { comments: 1 },
+      (err, result) => {
+        if (err) cbs.cbMsg(true, err);
+        else if (result === null) callback(cbs.cbMsg(false, 'Bike was not found in database!'));
+        callback(cbs.cbMsg(false, result.comments));
+      });
+  }
+}
+
 module.exports = {
   addBike,
   removeBike,
@@ -183,4 +247,8 @@ module.exports = {
   getStolenBikes,
   getFoundBikes,
   getMatchingBikes,
+  addComment,
+  editComment,
+  removeComment,
+  getComments,
 };
