@@ -11,6 +11,12 @@ router.get('/', (req, res) => {
   res.send('handle db tasks');
 });
 
+router.post('/preaddbike/', (req, res) => {
+  if (req.files !== undefined && req.files !== null) {
+    res.send('File was retrieved!');
+  } else res.send('No file was retrieved');
+});
+
 router.post('/addbike/', (req, res) => {
   const data = req.body;
 
