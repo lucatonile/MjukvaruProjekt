@@ -219,7 +219,7 @@ function getComments(req, callback) {
       (err, result) => {
         if (err) cbs.cbMsg(true, err);
         else if (result === null) callback(cbs.cbMsg(false, 'Bike was not found in database!'));
-        callback(cbs.cbMsg(false, result));
+        callback(cbs.cbMsg(false, result.comments));
       });
   }
 }
