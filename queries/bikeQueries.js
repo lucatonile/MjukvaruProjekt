@@ -11,7 +11,7 @@ function addBike(data, callback) {
   const bikeData = data;
   bikeData.submitter = data.userId;
 
-  const bike = new bikeModel.Bike(data);
+  const bike = new bikeModel.Bike(bikeData);
   bike.save((err) => {
     if (err) callback(cbs.cbMsg(true, err));
     else callback(cbs.cbMsg(false, { message: 'Success in adding bike!' }));
