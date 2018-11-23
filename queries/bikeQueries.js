@@ -33,9 +33,10 @@ function addBike(req, res, callback) {
   }
 }
 
+// long-lat not implemented in this one 
 function addBike2(data, callback) {
   // Model requires submitter Id
-  const bikeData = JSON.parse(data.json);
+  const bikeData = data;
   bikeData.submitter = data.userId;
 
   const bike = new bikeModel.Bike(bikeData);

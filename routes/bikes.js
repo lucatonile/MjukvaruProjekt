@@ -11,37 +11,22 @@ const gcs = require('../tools/gcs');
 
 const router = express.Router();
 
-/* GET home page. */
-
 router.get('/', (req, res) => {
   res.send('handle db tasks');
 });
 
 router.post('/preaddbike/', (req, res) => {
-  
-  // console.log(JSON.stringify([...req.files.image.data]));
-  py.stdin.write(JSON.stringify([...req.files.image.data]) + '\n');
-  // console.log(py.stdout)
-  console.log('WROTE!');
+  py.stdin.write(JSON.stringify([...req.files.image.data]));
+
   py.stdin.end();
 
   py.stdout.on('data', (data) => {
     res.end(data.toString());
   });
-
-  //res.send("wrote to py");
-  // Neural network
-  
-
-  if (req.files !== undefined && req.files !== null) {
-    // py.stdin.write(JSON.stringify([...req.files.image.data]));
-   
-  } //else res.send('No file was retrieved');
 });
 
 router.post('/addbike/', (req, res) => {
   const data = req.body;
-
   if (req.files !== undefined && req.files !== null) {
     gcs.uploadImage(req, (result) => {
       if (result.error) res.send(result.message);
@@ -55,7 +40,7 @@ router.post('/addbike/', (req, res) => {
       }
     });
   } else {
-    queries.addBike(req, res, (result) => {
+    queries.addBike(data, (result) => {
       if (result.error) res.send(result.message);
       else res.send(result.message);
     });
@@ -63,7 +48,8 @@ router.post('/addbike/', (req, res) => {
 });
 
 router.post('/addbike2/', (req, res) => {
-  const data = req.body;
+  const data = JSON.parse(req.body.json);
+  data.userId = req.body.userId;
 
   if (req.files !== undefined && req.files !== null) {
     gcs.uploadImage(req, (result) => {
@@ -91,20 +77,6 @@ router.post('/removebike/', (req, res) => {
 
 router.get('/getbikes/', (req, res) => {
   queries.getBikes(res, (result) => {
-    if (result.error) res.send(result.message);
-    else res.send(result.message);
-  });
-});
-
-router.post('/getbike/', (req, res) => {
-  queries.getBike(req, res, (result) => {
-    if (result.error) res.send(result.message);
-    else res.send(result.message);
-  });
-});
-
-router.get('/getmybikes/', (req, res) => {
-  queries.getMyBikes(req, res, (result) => {
     if (result.error) res.send(result.message);
     else res.send(result.message);
   });
