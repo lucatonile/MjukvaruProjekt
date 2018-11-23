@@ -1,5 +1,11 @@
 /* eslint no-underscore-dangle: 0 */
 const express = require('express');
+const { spawn } = require('child_process');
+const path = require('path');
+
+const py = spawn('python', ['-u', path.join(__dirname, '../bfr', 'test.py')]);
+// py.stdout.pipe(py.stdin, { end: false });
+// py.stdin.pipe(py.stdout, { end: false });
 const queries = require('../queries/bikeQueries');
 const gcs = require('../tools/gcs');
 
@@ -12,9 +18,25 @@ router.get('/', (req, res) => {
 });
 
 router.post('/preaddbike/', (req, res) => {
+  
+  // console.log(JSON.stringify([...req.files.image.data]));
+  py.stdin.write(JSON.stringify([...req.files.image.data]) + '\n');
+  // console.log(py.stdout)
+  console.log('WROTE!');
+  py.stdin.end();
+
+  py.stdout.on('data', (data) => {
+    res.end(data.toString());
+  });
+
+  //res.send("wrote to py");
+  // Neural network
+  
+
   if (req.files !== undefined && req.files !== null) {
-    res.send('File was retrieved!');
-  } else res.send('No file was retrieved');
+    // py.stdin.write(JSON.stringify([...req.files.image.data]));
+   
+  } //else res.send('No file was retrieved');
 });
 
 router.post('/addbike/', (req, res) => {
@@ -34,6 +56,29 @@ router.post('/addbike/', (req, res) => {
     });
   } else {
     queries.addBike(data, (result) => {
+      if (result.error) res.send(result.message);
+      else res.send(result.message);
+    });
+  }
+});
+
+router.post('/addbike2/', (req, res) => {
+  const data = req.body;
+
+  if (req.files !== undefined && req.files !== null) {
+    gcs.uploadImage(req, (result) => {
+      if (result.error) res.send(result.message);
+      else {
+        data.image_url = process.env.GCS_URL + result.message;
+
+        queries.addBike2(data, (result_) => {
+          if (result_.error) res.send(result_.message);
+          else res.send(result_.message);
+        });
+      }
+    });
+  } else {
+    queries.addBike2(data, (result) => {
       if (result.error) res.send(result.message);
       else res.send(result.message);
     });
@@ -114,4 +159,20 @@ router.get('/getmatchingbikes/', (req, res) => {
     });
   });
 });
+
+// Neural network
+// py.stdout.on('data', (data) => {
+//   console.log(data.toString())
+// });
+
+py.stdout.on('end', () => {
+  py.stdout.pipe(py.stdin, { end: false });
+  py.stdin.pipe(py.stdout, { end: false });
+  console.log('STREAM DONE!!!');
+});
+
+py.stderr.on('data', (data) => {
+  console.log(JSON.stringify(data.toString()));
+});
+
 module.exports = router;

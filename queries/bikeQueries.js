@@ -18,6 +18,18 @@ function addBike(data, callback) {
   });
 }
 
+function addBike2(data, callback) {
+  // Model requires submitter Id
+  const bikeData = JSON.parse(data.json);
+  bikeData.submitter = data.userId;
+
+  const bike = new bikeModel.Bike(bikeData);
+  bike.save((err) => {
+    if (err) callback(cbs.cbMsg(true, err));
+    else callback(cbs.cbMsg(false, { message: 'Success in adding bike!' }));
+  });
+}
+
 function updateBike(req, callback) {
   if (req.body.type !== undefined && (req.body.type !== 'FOUND' && req.body.type !== 'STOLEN')) {
     callback(cbs.cbMsg(true, 'type must be specified as either STOLEN or FOUND'));
@@ -226,6 +238,7 @@ function getComments(req, callback) {
 
 module.exports = {
   addBike,
+  addBike2,
   removeBike,
   updateBike,
   getBikes,
