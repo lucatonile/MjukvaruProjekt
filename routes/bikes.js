@@ -55,7 +55,7 @@ router.post('/addbike/', (req, res) => {
       }
     });
   } else {
-    queries.addBike(data, (result) => {
+    queries.addBike(req, res, (result) => {
       if (result.error) res.send(result.message);
       else res.send(result.message);
     });
@@ -91,6 +91,20 @@ router.post('/removebike/', (req, res) => {
 
 router.get('/getbikes/', (req, res) => {
   queries.getBikes(res, (result) => {
+    if (result.error) res.send(result.message);
+    else res.send(result.message);
+  });
+});
+
+router.post('/getbike/', (req, res) => {
+  queries.getBike(req, res, (result) => {
+    if (result.error) res.send(result.message);
+    else res.send(result.message);
+  });
+});
+
+router.get('/getmybikes/', (req, res) => {
+  queries.getMyBikes(req, res, (result) => {
     if (result.error) res.send(result.message);
     else res.send(result.message);
   });

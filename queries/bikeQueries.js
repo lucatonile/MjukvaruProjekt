@@ -2,20 +2,35 @@
 /* eslint no-underscore-dangle: 0 */
 const bikeModel = require('../models/bike');
 const cbs = require('../tools/cbs');
+const reverseGeolocation = require('../tools/reverseGeolocation');
 
 // Limit for getMatchingBikes results shown
 const matchLimit = 5;
 
-function addBike(data, callback) {
+function addBike(req, res, callback) {
   // Model requires submitter Id
-  const bikeData = data;
-  bikeData.submitter = data.userId;
+  const bikeData = req.body;
+  bikeData.submitter = req.body.userId;
+  const locations = reverseGeolocation.getLocation(req.body.lat, req.body.long);
 
-  const bike = new bikeModel.Bike(bikeData);
-  bike.save((err) => {
-    if (err) callback(cbs.cbMsg(true, err));
-    else callback(cbs.cbMsg(false, { message: 'Success in adding bike!' }));
-  });
+  if (locations.error !== undefined) {
+    callback(cbs.cbMsg(true, locations.error));
+    res.status(400).send();
+  } else {
+    bikeData.location = {
+      lat: req.body.lat,
+      long: req.body.long,
+      city: locations.city,
+      neighborhood: locations.neighborhood,
+      street: locations.street,
+    };
+
+    const bike = new bikeModel.Bike(bikeData);
+    bike.save((err) => {
+      if (err) callback(cbs.cbMsg(true, err));
+      else callback(cbs.cbMsg(false, { message: 'Success in adding bike!' }));
+    });
+  }
 }
 
 function addBike2(data, callback) {
@@ -56,8 +71,26 @@ function getBikesWithIdsOrdered(ids, callback) {
   });
 }
 
+// Return a bike with the provided bikeId.
+function getBike(req, res, callback) {
+  console.log(req.body);
+  bikeModel.Bike.findOne({ _id: req.body.bikeId }, (err, bike) => {
+    if (err) callback(cbs.cbMsg(true, err));
+    else if (!bike) callback(cbs.cbMsg(false, { message: 'Bike not found' }));
+    else callback(cbs.cbMsg(false, bike));
+  }).populate('submitter').populate('comments.author');
+}
+
 function getBikes(data, callback) {
   bikeModel.Bike.find((err, bikes) => {
+    if (err) callback(cbs.cbMsg(true, err));
+    else callback(cbs.cbMsg(false, bikes));
+  }).populate('submitter').populate('comments.author');
+}
+
+function getMyBikes(req, res, callback) {
+  console.log(req.body);
+  bikeModel.Bike.find({ submitter: req.body.userId }, (err, bikes) => {
     if (err) callback(cbs.cbMsg(true, err));
     else callback(cbs.cbMsg(false, bikes));
   }).populate('submitter').populate('comments.author');
@@ -164,7 +197,7 @@ function removeBike(req, res, callback) {
   } else if (req.body.bikeId === '') {
     callback(cbs.cbMsg(true, { error: 'Empty bikeId provided!' }));
   } else {
-    bikeModel.Bike.findOneAndRemove({ email: req.body.bikeId },
+    bikeModel.Bike.findOneAndRemove({ _id: req.body.bikeId },
       (err) => {
         if (err) cbs.cbMsg(true, err);
         callback(cbs.cbMsg(false, { message: 'Bike removed (or not found)!' }));
@@ -231,7 +264,11 @@ function getComments(req, callback) {
       (err, result) => {
         if (err) cbs.cbMsg(true, err);
         else if (result === null) callback(cbs.cbMsg(false, 'Bike was not found in database!'));
-        callback(cbs.cbMsg(false, result.comments));
+        else if (result.comments === undefined || result.comments === null) {
+          callback(cbs.cbMsg(false, 'No comments for this bike'));
+        } else {
+          callback(cbs.cbMsg(false, result.comments));
+        }
       });
   }
 }
@@ -241,7 +278,9 @@ module.exports = {
   addBike2,
   removeBike,
   updateBike,
+  getBike,
   getBikes,
+  getMyBikes,
   getBikesWithIdsOrdered,
   getStolenBikes,
   getFoundBikes,
