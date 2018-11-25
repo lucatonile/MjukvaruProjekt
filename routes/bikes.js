@@ -103,7 +103,7 @@ router.post('/editcomment/', (req, res) => {
   });
 });
 
-router.get('/getcomments/', (req, res) => {
+router.post('/getcomments/', (req, res) => {
   queries.getComments(req, (result) => {
     if (result.error) res.send(result.message);
     else res.send(result.message);
