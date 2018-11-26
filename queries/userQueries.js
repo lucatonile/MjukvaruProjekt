@@ -3,6 +3,9 @@ const bcrypt = require('bcryptjs');
 const userModel = require('../models/user');
 const cbs = require('../tools/cbs');
 
+const DECIMAL_FLAG = 10;
+const DESCENDING_FLAG = -1;
+
 // Returns the user document from the DB with the corresponding email provided in the body.
 function getUserInfoEmail(req, res, callback) {
   userModel.User.findOne({ email: req.body.email },
@@ -42,11 +45,19 @@ function getAllUsers(req, res, callback) {
 
 // Returns highscore of users sorted by their descending score.
 // POST parameter 'limit' sets the number of users returned.
+// Parameters location sets the geographical scope of the search.
 function getHighscore(req, res, callback) {
-  userModel.User.find((err, users) => {
-    if (err) callback(cbs.cbMsg(true, err));
-    callback(cbs.cbMsg(false, users));
-  }).sort({ game_score: -1 }).limit(parseInt(req.body.limit, 10));
+  if (req.body.location) {
+    userModel.User.find({ location: req.body.location }, (err, users) => {
+      if (err) callback(cbs.cbMsg(true, err));
+      else callback(cbs.cbMsg(false, users));
+    }).sort({ game_score: DESCENDING_FLAG }).limit(parseInt(req.body.limit, DECIMAL_FLAG));
+  } else {
+    userModel.User.find((err, users) => {
+      if (err) callback(cbs.cbMsg(true, err));
+      else callback(cbs.cbMsg(false, users));
+    }).sort({ game_score: DESCENDING_FLAG }).limit(parseInt(req.body.limit, DECIMAL_FLAG));
+  }
 }
 
 // Deletes the user associated with the provided email field of the body.
@@ -71,6 +82,7 @@ function updateUser(req, res, callback) {
   };
 
   const update = req.body;
+  // eslint-disable-next-line no-underscore-dangle
   delete update._id;
 
   // Only call hash function if a password was actually provided in the request.
