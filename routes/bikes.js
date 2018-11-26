@@ -132,7 +132,7 @@ router.post('/updatebike/', (req, res) => {
 });
 
 // TODO: only showing results above a certain threshold of similarity to uploaded bike
-router.get('/getmatchingbikes/', (req, res) => {
+router.post('/getmatchingbikes/', (req, res) => {
   queries.getMatchingBikes(req.body, (result) => {
     if (result.error) res.send(result.message);
     const ids = [];
