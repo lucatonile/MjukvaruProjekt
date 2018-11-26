@@ -154,14 +154,14 @@ router.post('/filterbikes/', (req, res) => { queries.filterBikes(req, res, (resu
 router.post('/getmatchingbikes/', (req, res) => {
   queries.getMatchingBikes(req.body, (result) => {
     if (result.error) res.send(result.message);
-    const ids = [];
-    for (let i = 0; i < result.message.length; i += 1) {
-      ids.push(result.message[i]._id);
+    else {
+      const ids = [];
+      for (let i = 0; i < result.message.length; i += 1) { ids.push(result.message[i]._id); }
+      queries.getBikesWithIdsOrdered(ids, (result_) => {
+        if (result_.error) res.send(result_.error);
+        else res.send(result_.message);
+      });
     }
-    queries.getBikesWithIdsOrdered(ids, (result_) => {
-      if (result_.error) res.send(result_.error);
-      else res.send(result_.message);
-    });
   });
 });
 

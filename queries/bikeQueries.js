@@ -275,9 +275,8 @@ function getComments(req, callback) {
 // Search for bikes in bikeModel with features matching the parameters provided by the caller.
 function filterBikes(req, res, callback) {
   if (req.body === undefined) { callback(cbs.cbMsg(true, 'Req.body undefined!')); }
-  console.log(req.body);
   delete req.body.userId;
-  
+
   bikeModel.Bike.find(req.body, (err, result) => {
     if (err) cbs.cbMsg(true, err);
     else if (result === null) callback(cbs.cbMsg(false, 'Nothing found!'));
