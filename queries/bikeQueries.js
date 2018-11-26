@@ -10,6 +10,7 @@ const matchLimit = 5;
 function addBike(req, res, callback) {
   // Model requires submitter Id
   const bikeData = req.body;
+
   bikeData.submitter = req.body.userId;
   const locations = reverseGeolocation.getLocation(req.body.lat, req.body.long);
 
@@ -24,7 +25,6 @@ function addBike(req, res, callback) {
       neighborhood: locations.neighborhood,
       street: locations.street,
     };
-
     const bike = new bikeModel.Bike(bikeData);
     bike.save((err) => {
       if (err) callback(cbs.cbMsg(true, err));
@@ -33,7 +33,7 @@ function addBike(req, res, callback) {
   }
 }
 
-// long-lat not implemented in this one 
+// long-lat not implemented in this one
 function addBike2(data, callback) {
   // Model requires submitter Id
   const bikeData = data;
@@ -272,6 +272,19 @@ function getComments(req, callback) {
   }
 }
 
+// Search for bikes in bikeModel with features matching the parameters provided by the caller.
+function filterBikes(req, res, callback) {
+  if (req.body === undefined) { callback(cbs.cbMsg(true, 'Req.body undefined!')); }
+  console.log(req.body);
+  delete req.body.userId;
+  
+  bikeModel.Bike.find(req.body, (err, result) => {
+    if (err) cbs.cbMsg(true, err);
+    else if (result === null) callback(cbs.cbMsg(false, 'Nothing found!'));
+    else res.send(cbs.cbMsg(false, result));
+  });
+}
+
 module.exports = {
   addBike,
   addBike2,
@@ -288,4 +301,5 @@ module.exports = {
   editComment,
   removeComment,
   getComments,
+  filterBikes,
 };

@@ -1,9 +1,10 @@
 /* eslint no-underscore-dangle: 0 */
 const express = require('express');
-const { spawn } = require('child_process');
+/* const { spawn } = require('child_process');
 const path = require('path');
+*/
 
-const py = spawn('python', ['-u', path.join(__dirname, '../bfr', 'test.py')]);
+// const py = spawn('python', ['-u', path.join(__dirname, '../bfr', 'test.py')]);
 // py.stdout.pipe(py.stdin, { end: false });
 // py.stdin.pipe(py.stdout, { end: false });
 const queries = require('../queries/bikeQueries');
@@ -14,7 +15,7 @@ const router = express.Router();
 router.get('/', (req, res) => {
   res.send('handle db tasks');
 });
-
+/*
 router.post('/preaddbike/', (req, res) => {
   py.stdin.write(JSON.stringify([...req.files.image.data]));
 
@@ -24,6 +25,7 @@ router.post('/preaddbike/', (req, res) => {
     res.end(data.toString());
   });
 });
+*/
 
 router.post('/addbike/', (req, res) => {
   const data = req.body;
@@ -33,14 +35,14 @@ router.post('/addbike/', (req, res) => {
       else {
         data.image_url = process.env.GCS_URL + result.message;
 
-        queries.addBike(data, (result_) => {
+        queries.addBike(req, res, (result_) => {
           if (result_.error) res.send(result_.message);
           else res.send(result_.message);
         });
       }
     });
   } else {
-    queries.addBike(data, (result) => {
+    queries.addBike(req, res, (result) => {
       if (result.error) res.send(result.message);
       else res.send(result.message);
     });
@@ -145,6 +147,9 @@ router.post('/updatebike/', (req, res) => {
   });
 });
 
+// Returns bikes having the features specified in the request parameters.
+router.post('/filterbikes/', (req, res) => { queries.filterBikes(req, res, (result) => { res.send(result.message); }); });
+
 // TODO: only showing results above a certain threshold of similarity to uploaded bike
 router.post('/getmatchingbikes/', (req, res) => {
   queries.getMatchingBikes(req.body, (result) => {
@@ -165,6 +170,8 @@ router.post('/getmatchingbikes/', (req, res) => {
 //   console.log(data.toString())
 // });
 
+/*
+
 py.stdout.on('end', () => {
   py.stdout.pipe(py.stdin, { end: false });
   py.stdin.pipe(py.stdout, { end: false });
@@ -174,5 +181,6 @@ py.stdout.on('end', () => {
 py.stderr.on('data', (data) => {
   console.log(JSON.stringify(data.toString()));
 });
+*/
 
 module.exports = router;
