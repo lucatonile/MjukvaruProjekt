@@ -17,7 +17,6 @@
     "express": "~4.16.0",
     "express-fileupload": "^1.0.0",
     "express-mongo-db": "^2.0.4",
-    "forever-monitor": "^1.7.1",
     "http-errors": "~1.6.2",
     "jade": "~1.11.0",
     "jsonwebtoken": "8.4.0",
