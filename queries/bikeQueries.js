@@ -33,7 +33,7 @@ function addBike(req, res, callback) {
   }
 }
 
-// long-lat not implemented in this one 
+// long-lat not implemented in this one
 function addBike2(data, callback) {
   // Model requires submitter Id
   const bikeData = data;

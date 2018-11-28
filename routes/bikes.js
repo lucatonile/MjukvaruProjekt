@@ -1,11 +1,6 @@
 /* eslint no-underscore-dangle: 0 */
 const express = require('express');
-const { spawn } = require('child_process');
-const path = require('path');
-
-const py = spawn('python', ['-u', path.join(__dirname, '../bfr', 'test.py')]);
-// py.stdout.pipe(py.stdin, { end: false });
-// py.stdin.pipe(py.stdout, { end: false });
+const request = require('request');
 const queries = require('../queries/bikeQueries');
 const gcs = require('../tools/gcs');
 
@@ -16,13 +11,23 @@ router.get('/', (req, res) => {
 });
 
 router.post('/preaddbike/', (req, res) => {
-  py.stdin.write(JSON.stringify([...req.files.image.data]));
-
-  py.stdin.end();
-
-  py.stdout.on('data', (data) => {
-    res.end(data.toString());
-  });
+  if (req.files !== undefined && req.files !== null) {
+    request.post('http://localhost:5000/api/labels', {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      form: {
+        file: JSON.stringify([...req.files.image.data]),
+      },
+    }, (err, httpRes, body) => {
+      if (err) res.send(err);
+      else {
+        res.send(body);
+      }
+    });
+  } else {
+    res.send('No image file found in request');
+  }
 });
 
 router.post('/addbike/', (req, res) => {
@@ -33,14 +38,14 @@ router.post('/addbike/', (req, res) => {
       else {
         data.image_url = process.env.GCS_URL + result.message;
 
-        queries.addBike(data, (result_) => {
+        queries.addBike(req, res, (result_) => {
           if (result_.error) res.send(result_.message);
           else res.send(result_.message);
         });
       }
     });
   } else {
-    queries.addBike(data, (result) => {
+    queries.addBike(req, res, (result) => {
       if (result.error) res.send(result.message);
       else res.send(result.message);
     });
@@ -158,21 +163,6 @@ router.post('/getmatchingbikes/', (req, res) => {
       else res.send(result_.message);
     });
   });
-});
-
-// Neural network
-// py.stdout.on('data', (data) => {
-//   console.log(data.toString())
-// });
-
-py.stdout.on('end', () => {
-  py.stdout.pipe(py.stdin, { end: false });
-  py.stdin.pipe(py.stdout, { end: false });
-  console.log('STREAM DONE!!!');
-});
-
-py.stderr.on('data', (data) => {
-  console.log(JSON.stringify(data.toString()));
 });
 
 module.exports = router;

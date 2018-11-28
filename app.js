@@ -6,6 +6,7 @@ const logger = require('morgan');
 const bodyParser = require('body-parser');
 require('./db.js');
 const fileUpload = require('express-fileupload');
+const { PythonShell } = require('python-shell');
 
 const authRouter = require('./routes/auth');
 const indexRouter = require('./routes/index');
@@ -13,6 +14,17 @@ const usersRouter = require('./routes/users');
 const bikesRouter = require('./routes/bikes');
 
 const app = express();
+
+const bfrScript = path.join(__dirname, 'bfr', 'bfr.py');
+const pyEnv = path.join(__dirname, 'bfr', 'env', 'Scripts', 'python');
+
+const pyOptions = {
+  pythonPath: pyEnv,
+  pythonOptions: ['-u'],
+  scriptPath: 'bfr',
+};
+
+const pyShell = new PythonShell('bfr.py', pyOptions);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -59,5 +71,14 @@ app.use(bodyParser.urlencoded({ // to support URL-encoded bodies
 
 // TODO Should this be an environmental variable?
 app.set('secretKey', 'nodeRestApi');
+
+pyShell.on('message', (message) => {
+  // received a message sent from the Python script (a simple "print" statement)
+  console.log(message);
+});
+
+pyShell.on('stderr', (stderr) => {
+  console.log(stderr);
+});
 
 module.exports = app;
