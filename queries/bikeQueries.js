@@ -10,8 +10,8 @@ const matchLimit = 5;
 function addBike(req, res, callback) {
   // Model requires submitter Id
   const bikeData = req.body;
-
   bikeData.submitter = req.body.userId;
+
   const locations = reverseGeolocation.getLocation(req.body.lat, req.body.long);
 
   if (locations.error !== undefined) {
@@ -26,6 +26,7 @@ function addBike(req, res, callback) {
       street: locations.street,
     };
     const bike = new bikeModel.Bike(bikeData);
+
     bike.save((err) => {
       if (err) callback(cbs.cbMsg(true, err));
       else callback(cbs.cbMsg(false, { message: 'Success in adding bike!' }));

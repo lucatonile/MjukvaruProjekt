@@ -17,7 +17,7 @@ function addUserPost(req, res, callback) {
 
   user.save((err) => {
     if (err) {
-      callback(err);
+      callback(cb.cbMsg(true, err));
     } else {
       callback(cb.cbMsg(false, { message: `User ${req.body.username} added!` }));
     }

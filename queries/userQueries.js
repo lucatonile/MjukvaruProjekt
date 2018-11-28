@@ -51,13 +51,43 @@ function getHighscore(req, res, callback) {
     userModel.User.find({ location: req.body.location }, (err, users) => {
       if (err) callback(cbs.cbMsg(true, err));
       else callback(cbs.cbMsg(false, users));
-    }).sort({ game_score: DESCENDING_FLAG }).limit(parseInt(req.body.limit, DECIMAL_FLAG));
+    }).sort({ 'game_score.total_score': DESCENDING_FLAG }).limit(parseInt(req.body.limit, DECIMAL_FLAG));
   } else {
     userModel.User.find((err, users) => {
       if (err) callback(cbs.cbMsg(true, err));
       else callback(cbs.cbMsg(false, users));
-    }).sort({ game_score: DESCENDING_FLAG }).limit(parseInt(req.body.limit, DECIMAL_FLAG));
+    }).sort({ 'game_score.total_score': DESCENDING_FLAG }).limit(parseInt(req.body.limit, DECIMAL_FLAG));
   }
+}
+
+// Increments thumb, bike and total score if they are provided.
+function updateHighscore(req, res, callback) {
+  let bikeScore = 0;
+  let thumbScore = 0;
+  let totalScore = 0;
+
+  if (req.body.thumb_score !== undefined) thumbScore = JSON.parse(req.body.thumb_score);
+  if (req.body.bike_score !== undefined) bikeScore = JSON.parse(req.body.bike_score);
+
+  // if bike or thumb score arent provided they are 0 and doesn't change totalScore (that start=0)
+  totalScore += (bikeScore + thumbScore);
+
+  userModel.User.findOneAndUpdate(
+    { username: req.body.user_name },
+    {
+      $inc: {
+        'game_score.thumb_score': thumbScore,
+        'game_score.bike_score': bikeScore,
+        'game_score.total_score': totalScore,
+      },
+    },
+    { new: true },
+    (err, user) => {
+      if (err) callback(cbs.cbMsg(true, err));
+      else if (!user) callback(cbs.cbMsg(true, 'No user by that Id found'));
+      else callback(cbs.cbMsg(false, user));
+    },
+  );
 }
 
 // Deletes the user associated with the provided email field of the body.
@@ -143,13 +173,27 @@ function getUserInfo(req, res, callback) {
   });
 }
 
+function incLostBikeCounter(userId) {
+  userModel.User.findOneAndUpdate(
+    { _id: userId },
+    { $inc: { 'game_score.bikes_lost': 1 } },
+    { new: true },
+    (err, user) => {
+      if (err) return err;
+      return user;
+    },
+  );
+}
+
 module.exports = {
   getUserInfoEmail,
   getHighscore,
+  updateHighscore,
   removeUser,
   updateUser,
   getUser,
   getAllUsers,
   setUserLocation,
   getUserInfo,
+  incLostBikeCounter,
 };

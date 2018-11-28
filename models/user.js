@@ -34,8 +34,22 @@ const userSchema = new mongoose.Schema({
   },
   phone_number: Number,
   game_score: {
-    type: Number,
-    default: 0,
+    bike_score: {
+      type: Number,
+      default: 0,
+    },
+    bikes_lost: {
+      type: Number,
+      default: 0,
+    },
+    thumb_score: {
+      type: Number,
+      default: 0,
+    },
+    total_score: {
+      type: Number,
+      default: 0,
+    },
   },
   location: {
     type: String,

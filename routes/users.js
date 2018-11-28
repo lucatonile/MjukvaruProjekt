@@ -22,6 +22,10 @@ router.post('/gethighscores/', (req, res) => {
   });
 });
 
+router.post('/updatehighscore/', (req, res) => {
+  queries.updateHighscore(req, res, (result) => { res.send(result.message); });
+});
+
 router.post('/removeuser/', (req, res) => {
   queries.removeUser(req, res, (result) => { res.send(result.message); });
 });

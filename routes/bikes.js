@@ -8,6 +8,7 @@ const path = require('path');
 // py.stdout.pipe(py.stdin, { end: false });
 // py.stdin.pipe(py.stdout, { end: false });
 const queries = require('../queries/bikeQueries');
+const incLostBikesCounter = require('../queries/userQueries').incLostBikeCounter;
 const gcs = require('../tools/gcs');
 
 const router = express.Router();
@@ -36,15 +37,22 @@ router.post('/addbike/', (req, res) => {
         data.image_url = process.env.GCS_URL + result.message;
 
         queries.addBike(req, res, (result_) => {
-          if (result_.error) res.send(result_.message);
-          else res.send(result_.message);
+          if (result_.error) {
+            res.send(result_.message);
+          } else {
+            res.send(result_.message + incLostBikesCounter(req.body.userId));
+          }
         });
       }
     });
   } else {
     queries.addBike(req, res, (result) => {
-      if (result.error) res.send(result.message);
-      else res.send(result.message);
+      if (result.error) {
+        res.send(result.message);
+      } else {
+        incLostBikesCounter(req.body.userId);
+        res.send(result.message);
+      }
     });
   }
 });
