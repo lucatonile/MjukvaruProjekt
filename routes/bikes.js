@@ -13,6 +13,9 @@ const gcs = require('../tools/gcs');
 
 const router = express.Router();
 
+// As defined in the bike Schema.
+const STOLEN_FLAG = 'STOLEN';
+
 router.get('/', (req, res) => {
   res.send('handle db tasks');
 });
@@ -40,7 +43,8 @@ router.post('/addbike/', (req, res) => {
           if (result_.error) {
             res.send(result_.message);
           } else {
-            res.send(result_.message + incLostBikesCounter(req.body.userId));
+            if (req.body.type === STOLEN_FLAG) incLostBikesCounter(req.body.userId);
+            res.send(result_.message);
           }
         });
       }
