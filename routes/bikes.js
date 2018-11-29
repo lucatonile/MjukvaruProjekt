@@ -19,17 +19,17 @@ const STOLEN_FLAG = 'STOLEN';
 router.get('/', (req, res) => {
   res.send('handle db tasks');
 });
-/*
+
 router.post('/preaddbike/', (req, res) => {
-  py.stdin.write(JSON.stringify([...req.files.image.data]));
-
-  py.stdin.end();
-
-  py.stdout.on('data', (data) => {
-    res.end(data.toString());
+  res.send({
+    color: 'green',
+    frame: 'sport',
+    lamp: true,
+    rack: true,
+    bikeFound: true,
+    basket: false,
   });
 });
-*/
 
 router.post('/addbike/', (req, res) => {
   const data = req.body;
