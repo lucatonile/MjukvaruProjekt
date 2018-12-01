@@ -73,9 +73,15 @@ const bikeSchema = new mongoose.Schema({
   },
   comments: [{
     author: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
+      id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+      },
+      username: {
+        type: String,
+        trim: true,
+      },
     },
     body: {
       type: String,

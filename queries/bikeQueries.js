@@ -25,6 +25,7 @@ function addBike(req, res, callback) {
       neighborhood: locations.neighborhood,
       street: locations.street,
     };
+
     const bike = new bikeModel.Bike(bikeData);
 
     bike.save((err) => {
@@ -212,7 +213,10 @@ function addComment(req, callback) {
     callback(cbs.cbMsg(true, 'Empty bikeId provided!'));
   } else {
     const comment = {
-      author: req.body.userId,
+      author: {
+        id: req.body.userId,
+        username: req.body.username,
+      },
       body: req.body.body,
     };
 
