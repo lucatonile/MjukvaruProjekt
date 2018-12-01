@@ -81,6 +81,7 @@ const bikeSchema = new mongoose.Schema({
       username: {
         type: String,
         trim: true,
+        required: true,
       },
     },
     body: {
