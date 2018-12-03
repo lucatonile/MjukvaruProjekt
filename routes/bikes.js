@@ -26,12 +26,11 @@ router.post('/preaddbike/', (req, res) => {
 });
 
 router.post('/addbike/', (req, res) => {
-  const data = req.body;
   if (req.files !== undefined && req.files !== null) {
     gcs.uploadImage(req, (result) => {
       if (result.error) res.send(result.message);
       else {
-        data.image_url = process.env.GCS_URL + result.message;
+        req.body.image_url = process.env.GCS_URL + result.message;
 
         queries.addBike(req, res, (result_) => {
           if (result_.error) {
