@@ -24,7 +24,7 @@ router.post('/preaddbike/', (req, res) => {
   res.send({
     color: 'green',
     frame: 'sport',
-    lamp: true,
+    light: true,
     rack: true,
     bikeFound: true,
     basket: false,
