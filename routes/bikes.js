@@ -138,6 +138,12 @@ router.post('/getcomments/', (req, res) => {
   });
 });
 
+router.post('/ratecomment/', (req, res) => {
+  queries.rateComment(req, res, (result) => {
+    res.send(result.message);
+  });
+});
+
 router.get('/getstolenbikes/', (req, res) => {
   queries.getStolenBikes(res, (result) => {
     if (result.error) res.send(result.message);

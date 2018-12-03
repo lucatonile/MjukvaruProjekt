@@ -73,16 +73,9 @@ const bikeSchema = new mongoose.Schema({
   },
   comments: [{
     author: {
-      id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true,
-      },
-      username: {
-        type: String,
-        trim: true,
-        required: true,
-      },
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
     },
     body: {
       type: String,
@@ -92,6 +85,16 @@ const bikeSchema = new mongoose.Schema({
     date: {
       type: Date,
       default: Date.now,
+    },
+    rating: {
+      up: {
+        type: Number,
+        default: 0,
+      },
+      down: {
+        type: Number,
+        default: 0,
+      },
     },
   }],
 });

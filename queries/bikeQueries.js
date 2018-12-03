@@ -28,9 +28,9 @@ function addBike(req, res, callback) {
 
     const bike = new bikeModel.Bike(bikeData);
 
-    bike.save((err) => {
+    bike.save((err, result) => {
       if (err) callback(cbs.cbMsg(true, err));
-      else callback(cbs.cbMsg(false, { message: 'Success in adding bike!' }));
+      else callback(cbs.cbMsg(false, { message: `Success in adding bike: ${result._id}` }));
     });
   }
 }
@@ -109,7 +109,7 @@ function getFoundBikes(data, callback) {
     (err, bikes) => {
       if (err) callback(cbs.cbMsg(true, err));
       else callback(cbs.cbMsg(false, bikes));
-    }).populate('submitter');
+    }).populate('submitter').populate('comments.author');
 }
 
 function getMatchingBikes(data, callback) {
@@ -213,10 +213,7 @@ function addComment(req, callback) {
     callback(cbs.cbMsg(true, 'Empty bikeId provided!'));
   } else {
     const comment = {
-      author: {
-        id: req.body.userId,
-        username: req.body.username,
-      },
+      author: req.body.userId,
       body: req.body.body,
     };
 
@@ -258,6 +255,44 @@ function editComment(req, callback) {
   );
 }
 
+// TODO Validate input
+function rateComment(req, res, callback) {
+  let upScore = 0;
+  let downScore = 0;
+  console.log('1');
+  try {
+    if (req.body.up !== undefined) upScore = JSON.parse(req.body.up);
+    if (req.body.down !== undefined) downScore = JSON.parse(req.body.down);
+  } catch (e) {
+    if (e instanceof SyntaxError) {
+      res.status(500).send(cbs.cbMsg(true, `Invalid input! ${e}`));
+      return;
+    }
+  }
+  console.log('2');
+
+  bikeModel.Bike.findOneAndUpdate(
+    {
+      _id: req.body.bikeId,
+      'comments._id': req.body.commentId,
+    },
+    {
+      $inc: {
+        'comments.$.rating.up': upScore,
+        'comments.$.rating.down': downScore,
+      },
+    },
+    { new: true },
+    (err) => {
+      console.log('3');
+
+      if (err) callback(cbs.cbMsg(true, err));
+      else callback(cbs.cbMsg(false, 'Rated comment!'));
+      console.log('4');
+    },
+  );
+}
+
 function getComments(req, callback) {
   if (req.body.bikeId === undefined) {
     callback(cbs.cbMsg(true, 'bikeId not provided!'));
@@ -286,7 +321,7 @@ function filterBikes(req, res, callback) {
     if (err) cbs.cbMsg(true, err);
     else if (result === null) callback(cbs.cbMsg(false, 'Nothing found!'));
     else res.send(cbs.cbMsg(false, result));
-  });
+  }).populate('submitter');
 }
 
 module.exports = {
@@ -305,5 +340,6 @@ module.exports = {
   editComment,
   removeComment,
   getComments,
+  rateComment,
   filterBikes,
 };
