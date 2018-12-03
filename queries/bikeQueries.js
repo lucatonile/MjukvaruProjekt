@@ -84,17 +84,18 @@ function getBikesWithIdsOrdered(ids, callback) {
 // Return a bike with the provided bikeId.
 function getBike(req, res, callback) {
   bikeModel.Bike.findOne({ _id: req.body.bikeId }, (err, bike) => {
+    console.log(bike);
     if (err) callback(cbs.cbMsg(true, err));
     else if (!bike) callback(cbs.cbMsg(false, 'Bike not found'));
     else callback(cbs.cbMsg(false, bike));
-  }).populate('submitter').populate('comments.author');
+  }).populate('comments.author submitter');
 }
 
 function getBikes(data, callback) {
   bikeModel.Bike.find((err, bikes) => {
     if (err) callback(cbs.cbMsg(true, err));
     else callback(cbs.cbMsg(false, bikes));
-  }).populate('submitter').populate('comments.author');
+  }).populate('comments.author submitter');
 }
 
 function getMyBikes(req, res, callback) {
