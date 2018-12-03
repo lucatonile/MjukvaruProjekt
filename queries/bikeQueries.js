@@ -29,8 +29,15 @@ function addBike(req, res, callback) {
     const bike = new bikeModel.Bike(bikeData);
 
     bike.save((err, result) => {
-      if (err) callback(cbs.cbMsg(true, err));
-      else callback(cbs.cbMsg(false, { message: `Success in adding bike: ${result._id}` }));
+      if (err) {
+        callback(cbs.cbMsg(true, err));
+      } else {
+        callback(cbs.cbMsg(false, {
+          message: 'Success in adding bike',
+          bikeId: result._id,
+          bike: result,
+        }));
+      }
     });
   }
 }
@@ -259,7 +266,6 @@ function editComment(req, callback) {
 function rateComment(req, res, callback) {
   let upScore = 0;
   let downScore = 0;
-  console.log('1');
   try {
     if (req.body.up !== undefined) upScore = JSON.parse(req.body.up);
     if (req.body.down !== undefined) downScore = JSON.parse(req.body.down);
@@ -269,7 +275,6 @@ function rateComment(req, res, callback) {
       return;
     }
   }
-  console.log('2');
 
   bikeModel.Bike.findOneAndUpdate(
     {
@@ -284,11 +289,8 @@ function rateComment(req, res, callback) {
     },
     { new: true },
     (err) => {
-      console.log('3');
-
       if (err) callback(cbs.cbMsg(true, err));
       else callback(cbs.cbMsg(false, 'Rated comment!'));
-      console.log('4');
     },
   );
 }
