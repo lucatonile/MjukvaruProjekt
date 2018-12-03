@@ -310,7 +310,7 @@ function getComments(req, callback) {
         } else {
           callback(cbs.cbMsg(false, result.comments));
         }
-      });
+      }).populate('comments.author');
   }
 }
 
