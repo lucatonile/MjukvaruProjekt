@@ -1,12 +1,6 @@
 /* eslint no-underscore-dangle: 0 */
 const express = require('express');
-/* const { spawn } = require('child_process');
-const path = require('path');
-*/
 
-// const py = spawn('python', ['-u', path.join(__dirname, '../bfr', 'test.py')]);
-// py.stdout.pipe(py.stdin, { end: false });
-// py.stdin.pipe(py.stdout, { end: false });
 const queries = require('../queries/bikeQueries');
 const incLostBikesCounter = require('../queries/userQueries').incLostBikeCounter;
 const gcs = require('../tools/gcs');
@@ -24,7 +18,7 @@ router.post('/preaddbike/', (req, res) => {
   res.send({
     color: 'green',
     frame: 'sport',
-    light: true,
+    lamp: true,
     rack: true,
     bikeFound: true,
     basket: false,
@@ -54,7 +48,7 @@ router.post('/addbike/', (req, res) => {
       if (result.error) {
         res.send(result.message);
       } else {
-        if (req.body.type === STOLEN_FLAG) incLostBikesCounter(req.body.userId);
+        incLostBikesCounter(req.body.userId);
         res.send(result.message);
       }
     });
@@ -138,12 +132,6 @@ router.post('/getcomments/', (req, res) => {
   });
 });
 
-router.post('/ratecomment/', (req, res) => {
-  queries.rateComment(req, res, (result) => {
-    res.send(result.message);
-  });
-});
-
 router.get('/getstolenbikes/', (req, res) => {
   queries.getStolenBikes(res, (result) => {
     if (result.error) res.send(result.message);
@@ -182,23 +170,5 @@ router.post('/getmatchingbikes/', (req, res) => {
     }
   });
 });
-
-// Neural network
-// py.stdout.on('data', (data) => {
-//   console.log(data.toString())
-// });
-
-/*
-
-py.stdout.on('end', () => {
-  py.stdout.pipe(py.stdin, { end: false });
-  py.stdin.pipe(py.stdout, { end: false });
-  console.log('STREAM DONE!!!');
-});
-
-py.stderr.on('data', (data) => {
-  console.log(JSON.stringify(data.toString()));
-});
-*/
 
 module.exports = router;
