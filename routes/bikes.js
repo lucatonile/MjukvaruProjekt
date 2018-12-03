@@ -54,7 +54,7 @@ router.post('/addbike/', (req, res) => {
       if (result.error) {
         res.send(result.message);
       } else {
-        incLostBikesCounter(req.body.userId);
+        if (req.body.type === STOLEN_FLAG) incLostBikesCounter(req.body.userId);
         res.send(result.message);
       }
     });
