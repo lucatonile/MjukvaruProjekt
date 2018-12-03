@@ -22,7 +22,7 @@ def extract(pic):
         "basket": "",
         "frame": "",
         "color": "",
-        "lamp": ""
+        "light": ""
     }
 
     pic = np.array(pic,dtype=np.uint8)
