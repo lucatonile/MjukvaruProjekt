@@ -76,8 +76,14 @@ function getBikesWithIdsOrdered(ids, callback) {
   ];
 
   bikeModel.Bike.aggregate(query, (err, bikes) => {
-    if (err) callback(cbs.cbMsg(true, err));
-    else callback(cbs.cbMsg(false, bikes));
+    if (err) {
+      callback(cbs.cbMsg(true, err));
+    } else {
+      bikeModel.Bike.populate(bikes, 'submitter', (err1, populatedBikes) => {
+        if (err1) callback(cbs.cbMsg(true, err1));
+        else callback(cbs.cbMsg(false, populatedBikes));
+      });
+    }
   });
 }
 
@@ -87,28 +93,28 @@ function getBike(req, res, callback) {
     if (err) callback(cbs.cbMsg(true, err));
     else if (!bike) callback(cbs.cbMsg(false, 'Bike not found'));
     else callback(cbs.cbMsg(false, bike));
-  }).populate('comments.author submitter');
+  });
 }
 
 function getBikes(data, callback) {
   bikeModel.Bike.find((err, bikes) => {
     if (err) callback(cbs.cbMsg(true, err));
     else callback(cbs.cbMsg(false, bikes));
-  }).populate('comments.author submitter');
+  });
 }
 
 function getMyBikes(req, res, callback) {
   bikeModel.Bike.find({ submitter: req.body.userId }, (err, bikes) => {
     if (err) callback(cbs.cbMsg(true, err));
     else callback(cbs.cbMsg(false, bikes));
-  }).populate('submitter').populate('comments.author');
+  });
 }
 
 function getStolenBikes(data, callback) {
   bikeModel.Bike.find({ type: 'STOLEN', active: true }, (err, bikes) => {
     if (err) callback(cbs.cbMsg(true, err));
     else callback(cbs.cbMsg(false, bikes));
-  }).populate('submitter').populate('comments.author');
+  });
 }
 
 function getFoundBikes(data, callback) {
@@ -116,7 +122,7 @@ function getFoundBikes(data, callback) {
     (err, bikes) => {
       if (err) callback(cbs.cbMsg(true, err));
       else callback(cbs.cbMsg(false, bikes));
-    }).populate('submitter').populate('comments.author');
+    });
 }
 
 function getMatchingBikes(data, callback) {
@@ -323,7 +329,7 @@ function filterBikes(req, res, callback) {
     if (err) cbs.cbMsg(true, err);
     else if (result === null) callback(cbs.cbMsg(false, 'Nothing found!'));
     else res.send(cbs.cbMsg(false, result));
-  }).populate('submitter');
+  });
 }
 
 module.exports = {

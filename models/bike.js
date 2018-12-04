@@ -99,6 +99,12 @@ const bikeSchema = new mongoose.Schema({
   }],
 });
 
+// Always attach `populate()` to `find()` calls
+bikeSchema.pre('find', function populateSubmitter() {
+  console.log('in PRE call for find');
+  this.populate('submitter comments.author');
+});
+
 const bikeModel = mongoose.model('Bike', bikeSchema, 'bikes');
 
 // Use initial uppercase for models (as with a Class object)
