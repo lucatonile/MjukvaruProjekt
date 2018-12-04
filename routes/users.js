@@ -6,9 +6,10 @@ const imgOptimizer = require('../tools/imgOptimizer');
 
 const router = express.Router();
 
-router.use('/updateprofilepic/', (req, res, next) => {
-  imgOptimizer.minimize(req, res, next);
-});
+// Compress images before handling updateprofilepic
+// router.use('/updateprofilepic/', (req, res, next) => {
+//   imgOptimizer.minimize(req, res, next);
+// });
 
 router.get('/getuser/', (req, res) => {
   queries.getUser(req, res, (result) => { res.send(result.message); });
@@ -50,13 +51,22 @@ router.post('/setuserlocation/', (req, res) => {
 
 router.post('/updateprofilepic/', (req, res) => {
   if (req.files !== undefined && req.files !== null) {
-    gcs.uploadImage(req, (result) => {
+    gcs.uploadImage({ req }, (result) => {
       if (result.error) res.send(result);
       else {
         const imageUrl = process.env.GCS_URL + result.message;
 
         queries.updateProfilePic(req.body.userId, imageUrl, (result_) => {
+          // Done uploading profile pic, send response
           res.send(result_);
+
+          // Behind the hood, optimize image and replace old image with optimized
+          imgOptimizer.minimize(req.files.image.data, (miniImg) => {
+            if (miniImg) {
+              req.files.image.data = miniImg;
+              gcs.uploadImage({ req, name: result.message }, () => {});
+            }
+          });
         });
       }
     });

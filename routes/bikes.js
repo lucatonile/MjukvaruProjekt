@@ -11,10 +11,10 @@ const router = express.Router();
 // As defined in the bike Schema.
 const STOLEN_FLAG = 'STOLEN';
 
-// Compress images before handling addbike
-router.use('/addbike/', (req, res, next) => {
-  imgOptimizer.minimize(req, res, next);
-});
+// // Compress images before handling addbike
+// router.use('/addbike/', (req, res, next) => {
+//   imgOptimizer.minimize(req, res, next);
+// });
 
 router.get('/', (req, res) => {
   res.send('handle db tasks');
@@ -34,9 +34,8 @@ router.post('/preaddbike/', (req, res) => {
 router.post('/addbike/', (req, res) => {
   // const data = req.body;
   if (req.files !== undefined && req.files !== null) {
-    gcs.uploadImage(req, (result) => {
+    gcs.uploadImage({ req }, (result) => {
       if (result.error) res.send(result.message);
-
       else {
         req.body.image_url = process.env.GCS_URL + result.message;
         queries.addBike(req, res, (result_) => {
@@ -44,7 +43,17 @@ router.post('/addbike/', (req, res) => {
             res.send(result_.message);
           } else {
             if (req.body.type === STOLEN_FLAG) incLostBikesCounter(req.body.userId);
-            res.send(result_.message);
+
+            // Done uploading profile pic, send response
+            res.send(result_);
+
+            // Behind the hood, optimize image and replace old image with optimized
+            imgOptimizer.minimize(req.files.image.data, (miniImg) => {
+              if (miniImg) {
+                req.files.image.data = miniImg;
+                gcs.uploadImage({ req, name: result.message }, () => {});
+              }
+            });
           }
         });
       }

@@ -14,22 +14,18 @@ const jpegQuality = 70;
 // 0 (worst) - 100 (best)
 const pngQuality = '30-60';
 
-async function minimize(req, res, next) {
-  if (req.files !== undefined && req.files !== null) {
+async function minimize(buffer, callback) {
+  if (buffer !== undefined && buffer !== null) {
     // Compress image in request
-    const miniImg = await imagemin.buffer(req.files.image.data, {
+    const miniImg = await imagemin.buffer(buffer, {
       plugins: [
         imageminMozjpeg({ quality: jpegQuality }),
         imageminPngquant({ quality: pngQuality }),
       ],
     });
-
-    // Change image in request to compressed version
-    req.files.image.data = miniImg;
-    console.log("compressed");
-    next();
+    callback(miniImg);
   } else {
-    next();
+    callback(0);
   }
 }
 
