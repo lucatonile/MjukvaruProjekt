@@ -11,6 +11,11 @@ const router = express.Router();
 // As defined in the bike Schema.
 const STOLEN_FLAG = 'STOLEN';
 
+// Compress images before handling addbike
+router.use('/addbike/', (req, res, next) => {
+  imgOptimizer.minimize(req, res, next);
+});
+
 router.get('/', (req, res) => {
   res.send('handle db tasks');
 });
@@ -19,7 +24,7 @@ router.post('/preaddbike/', (req, res) => {
   res.send({
     color: 'green',
     frame: 'sport',
-    light: true,
+    lamp: true,
     rack: true,
     bikeFound: true,
     basket: false,
@@ -29,31 +34,27 @@ router.post('/preaddbike/', (req, res) => {
 router.post('/addbike/', (req, res) => {
   // const data = req.body;
   if (req.files !== undefined && req.files !== null) {
-    imgOptimizer.minimize(req.files.image.data).then((minImg) => {
-      req.files.image.data = minImg;
+    gcs.uploadImage(req, (result) => {
+      if (result.error) res.send(result.message);
 
-      gcs.uploadImage(req, (result) => {
-        if (result.error) res.send(result.message);
-        else {
-          req.body.image_url = process.env.GCS_URL + result.message;
-
-          queries.addBike(req, res, (result_) => {
-            if (result_.error) {
-              res.send(result_.message);
-            } else {
-              if (req.body.type === STOLEN_FLAG) incLostBikesCounter(req.body.userId);
-              res.send(result_.message);
-            }
-          });
-        }
-      });
+      else {
+        req.body.image_url = process.env.GCS_URL + result.message;
+        queries.addBike(req, res, (result_) => {
+          if (result_.error) {
+            res.send(result_.message);
+          } else {
+            if (req.body.type === STOLEN_FLAG) incLostBikesCounter(req.body.userId);
+            res.send(result_.message);
+          }
+        });
+      }
     });
   } else {
     queries.addBike(req, res, (result) => {
       if (result.error) {
         res.send(result.message);
       } else {
-        if (req.body.type === STOLEN_FLAG) incLostBikesCounter(req.body.userId);
+        incLostBikesCounter(req.body.userId);
         res.send(result.message);
       }
     });
@@ -134,12 +135,6 @@ router.post('/getcomments/', (req, res) => {
   queries.getComments(req, (result) => {
     if (result.error) res.send(result.message);
     else res.send(result.message);
-  });
-});
-
-router.post('/ratecomment/', (req, res) => {
-  queries.rateComment(req, res, (result) => {
-    res.send(result.message);
   });
 });
 

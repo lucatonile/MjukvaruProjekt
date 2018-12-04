@@ -18,24 +18,22 @@ function uploadImage(req, callback) {
   // Verify that uploaded file is image
   if (req.files.image.mimetype.split('/')[0] !== 'image') {
     callback(cbs.cbMsg(true, 'File must be an image!'));
+  } else {
+    const metadata = {
+      contentType: req.files.image.mimetype,
+    };
+
+    // Upload file to gcs and mongodb.
+    // To get link to file, use:
+    // http://storage.googleapis.com/bikeini/filename (uuid)
+    file.save(req.files.image.data, {
+      public: true,
+      metadata,
+    }, (err) => {
+      if (err) callback(cbs.cbMsg(true, err));
+      else callback(cbs.cbMsg(false, filename));
+    });
   }
-
-  const metadata = {
-    contentType: req.files.image.mimetype,
-  };
-
-  // Upload file to gsc and mongodb.
-  // To get link to file, use:
-  // http://storage.googleapis.com/bikeini/filename (uuid)
-  file.save(req.files.image.data, {
-    public: true,
-    metadata,
-  }, (err) => {
-    if (!err) {
-      // File written successfully.
-      callback(cbs.cbMsg(false, filename));
-    }
-  });
 }
 
 module.exports = {

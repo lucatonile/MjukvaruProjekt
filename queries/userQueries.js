@@ -2,6 +2,7 @@
 const bcrypt = require('bcryptjs');
 const userModel = require('../models/user');
 const cbs = require('../tools/cbs');
+const gcs = require('../tools/gcs');
 
 const DECIMAL_FLAG = 10;
 const DESCENDING_FLAG = -1;
@@ -185,6 +186,18 @@ function incLostBikeCounter(userId) {
   );
 }
 
+function updateProfilePic(userId, imageUrl, callback) {
+  userModel.User.findOneAndUpdate(
+    { _id: userId },
+    { avatar_url: imageUrl },
+    { new: true, projection: { avatar_url: 1 } },
+    (err, user) => {
+      if (err) callback(cbs.cbMsg(true, err));
+      else callback(cbs.cbMsg(false, user));
+    },
+  );
+}
+
 module.exports = {
   getUserInfoEmail,
   getHighscore,
@@ -196,4 +209,5 @@ module.exports = {
   setUserLocation,
   getUserInfo,
   incLostBikeCounter,
+  updateProfilePic,
 };
