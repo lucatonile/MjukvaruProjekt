@@ -11,11 +11,6 @@ const router = express.Router();
 // As defined in the bike Schema.
 const STOLEN_FLAG = 'STOLEN';
 
-// // Compress images before handling addbike
-// router.use('/addbike/', (req, res, next) => {
-//   imgOptimizer.minimize(req, res, next);
-// });
-
 router.get('/', (req, res) => {
   res.send('handle db tasks');
 });
@@ -32,7 +27,6 @@ router.post('/preaddbike/', (req, res) => {
 });
 
 router.post('/addbike/', (req, res) => {
-  // const data = req.body;
   if (req.files !== undefined && req.files !== null) {
     gcs.uploadImage({ req }, (result) => {
       if (result.error) res.send(result.message);

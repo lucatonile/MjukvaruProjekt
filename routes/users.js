@@ -6,11 +6,6 @@ const imgOptimizer = require('../tools/imgOptimizer');
 
 const router = express.Router();
 
-// Compress images before handling updateprofilepic
-// router.use('/updateprofilepic/', (req, res, next) => {
-//   imgOptimizer.minimize(req, res, next);
-// });
-
 router.get('/getuser/', (req, res) => {
   queries.getUser(req, res, (result) => { res.send(result.message); });
 });
