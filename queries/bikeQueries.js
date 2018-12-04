@@ -84,7 +84,6 @@ function getBikesWithIdsOrdered(ids, callback) {
 // Return a bike with the provided bikeId.
 function getBike(req, res, callback) {
   bikeModel.Bike.findOne({ _id: req.body.bikeId }, (err, bike) => {
-    console.log(bike);
     if (err) callback(cbs.cbMsg(true, err));
     else if (!bike) callback(cbs.cbMsg(false, 'Bike not found'));
     else callback(cbs.cbMsg(false, bike));

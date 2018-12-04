@@ -36,6 +36,11 @@ app.use('/auth', authRouter);
 app.use('/users', auth.validateUser, usersRouter);
 app.use('/bikes', auth.validateUser, bikesRouter);
 
+// Test routes
+const testRouter = require('./routes/test');
+
+app.use('/test', testRouter);
+
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
   next(createError(404));
