@@ -77,6 +77,9 @@ const bikeSchema = new mongoose.Schema({
       ref: 'User',
       required: true,
     },
+    isReplyToCommentId: {
+      type: mongoose.Schema.Types.ObjectId,
+    },
     body: {
       type: String,
       required: true,
@@ -87,21 +90,26 @@ const bikeSchema = new mongoose.Schema({
       default: Date.now,
     },
     rating: {
-      up: {
-        type: Number,
-        default: 0,
-      },
-      down: {
-        type: Number,
-        default: 0,
-      },
+      up: [{
+        userId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User',
+          required: true,
+        },
+      }],
+      down: [{
+        userId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User',
+          required: true,
+        },
+      }],
     },
   }],
 });
 
 // Always attach `populate()` to `find()` calls
 bikeSchema.pre('find', function populateSubmitter() {
-  console.log('in PRE call for find');
   this.populate('submitter comments.author');
 });
 
