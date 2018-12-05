@@ -219,6 +219,24 @@ function removeBike(req, res, callback) {
   }
 }
 
+// Search for bikes in bikeModel with features matching the parameters provided by the caller.
+function filterBikes(req, res, callback) {
+  if (req.body === undefined) { callback(cbs.cbMsg(true, 'Req.body undefined!')); }
+  delete req.body.userId;
+
+  bikeModel.Bike.find(req.body, (err, result) => {
+    if (err) cbs.cbMsg(true, err);
+    else if (result === null) callback(cbs.cbMsg(false, 'Nothing found!'));
+    else res.send(cbs.cbMsg(false, result));
+  });
+}
+
+/*
+  Comment section
+  TODO break this out to a separate file.
+*/
+
+
 function addComment(req, callback) {
   if (req.body.bikeId === undefined) {
     callback(cbs.cbMsg(true, 'bikeId not provided!'));
@@ -229,6 +247,9 @@ function addComment(req, callback) {
       author: req.body.userId,
       body: req.body.body,
     };
+
+    // If comment is a reply to another comment, set the id of comment it replies to.
+    if (req.body.replyCommentId) comment.isReplyToCommentId = req.body.replyCommentId;
 
     bikeModel.Bike.findOneAndUpdate({ _id: req.body.bikeId }, { $push: { comments: comment } },
       { upsert: false, new: true }, (err, result) => {
@@ -352,18 +373,6 @@ function getComments(req, callback) {
         }
       }).populate('comments.author');
   }
-}
-
-// Search for bikes in bikeModel with features matching the parameters provided by the caller.
-function filterBikes(req, res, callback) {
-  if (req.body === undefined) { callback(cbs.cbMsg(true, 'Req.body undefined!')); }
-  delete req.body.userId;
-
-  bikeModel.Bike.find(req.body, (err, result) => {
-    if (err) cbs.cbMsg(true, err);
-    else if (result === null) callback(cbs.cbMsg(false, 'Nothing found!'));
-    else res.send(cbs.cbMsg(false, result));
-  });
 }
 
 module.exports = {

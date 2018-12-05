@@ -77,6 +77,9 @@ const bikeSchema = new mongoose.Schema({
       ref: 'User',
       required: true,
     },
+    isReplyToCommentId: {
+      type: mongoose.Schema.Types.ObjectId,
+    },
     body: {
       type: String,
       required: true,
