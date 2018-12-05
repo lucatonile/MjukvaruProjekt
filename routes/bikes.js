@@ -28,10 +28,12 @@ router.post('/preaddbike/', (req, res) => {
 
 router.post('/addbike/', (req, res) => {
   if (req.files !== undefined && req.files !== null) {
-    gcs.uploadImage({ req }, (result) => {
+    gcs.uploadImage({ req, thumbnail: { width: 250, height: 250 } }, (result) => {
       if (result.error) res.send(result.message);
       else {
-        req.body.image_url = process.env.GCS_URL + result.message;
+        req.body.image_url = process.env.GCS_URL + result.message.img;
+        req.body.thumbnail_url = process.env.GCS_URL + result.message.thumbnail;
+
         queries.addBike(req, res, (result_) => {
           if (result_.error) {
             res.send(result_.message);
@@ -42,10 +44,11 @@ router.post('/addbike/', (req, res) => {
             res.send(result_);
 
             // Behind the hood, optimize image and replace old image with optimized
-            imgOptimizer.minimize(req.files.image.data, (miniImg) => {
-              if (miniImg) {
-                req.files.image.data = miniImg;
-                gcs.uploadImage({ req, name: result.message }, () => {});
+            imgOptimizer.minimize(req.files.image.data, (result__) => {
+              if (result__.error) console.log(result__.message);
+              else {
+                req.files.image.data = result__.message;
+                gcs.uploadImage({ req, name: result.message.img }, () => {});
               }
             });
           }

@@ -11,7 +11,10 @@ function addBike(req, res, callback) {
   // Model requires submitter Id
   const bikeData = req.body;
   bikeData.submitter = req.body.userId;
-
+  bikeData.image_url = {
+    img: req.body.image_url,
+    thumbnail: req.body.thumbnail_url,
+  };
   const locations = reverseGeolocation.getLocation(req.body.lat, req.body.long);
 
   if (locations.error !== undefined) {
@@ -84,7 +87,6 @@ function getBikesWithIdsOrdered(ids, callback) {
 // Return a bike with the provided bikeId.
 function getBike(req, res, callback) {
   bikeModel.Bike.findOne({ _id: req.body.bikeId }, (err, bike) => {
-    console.log(bike);
     if (err) callback(cbs.cbMsg(true, err));
     else if (!bike) callback(cbs.cbMsg(false, 'Bike not found'));
     else callback(cbs.cbMsg(false, bike));

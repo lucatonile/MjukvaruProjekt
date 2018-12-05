@@ -186,10 +186,15 @@ function incLostBikeCounter(userId) {
   );
 }
 
-function updateProfilePic(userId, imageUrl, callback) {
+function updateProfilePic(userId, imageUrls, callback) {
   userModel.User.findOneAndUpdate(
     { _id: userId },
-    { avatar_url: imageUrl },
+    {
+      avatar_url: {
+        img: imageUrls.img,
+        thumbnail: imageUrls.thumbnail,
+      },
+    },
     { new: true, projection: { avatar_url: 1 } },
     (err, user) => {
       if (err) callback(cbs.cbMsg(true, err));

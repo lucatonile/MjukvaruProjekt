@@ -46,23 +46,26 @@ router.post('/setuserlocation/', (req, res) => {
 
 router.post('/updateprofilepic/', (req, res) => {
   if (req.files !== undefined && req.files !== null) {
-    gcs.uploadImage({ req }, (result) => {
+    gcs.uploadImage({ req, thumbnail: { width: 250, height: 250 } }, (result) => {
       if (result.error) res.send(result);
       else {
-        const imageUrl = process.env.GCS_URL + result.message;
+        const imageUrl = process.env.GCS_URL + result.message.img;
+        const thumbnailUrl = process.env.GCS_URL + result.message.thumbnail;
 
-        queries.updateProfilePic(req.body.userId, imageUrl, (result_) => {
-          // Done uploading profile pic, send response
-          res.send(result_);
+        queries.updateProfilePic(req.body.userId, { img: imageUrl, thumbnail: thumbnailUrl },
+          (result_) => {
+            // Done uploading profile pic, send response
+            res.send(result_);
 
-          // Behind the hood, optimize image and replace old image with optimized
-          imgOptimizer.minimize(req.files.image.data, (miniImg) => {
-            if (miniImg) {
-              req.files.image.data = miniImg;
-              gcs.uploadImage({ req, name: result.message }, () => {});
-            }
+            // Behind the hood, optimize image and replace old image with optimized
+            imgOptimizer.minimize(req.files.image.data, (result__) => {
+              if (result__.error) console.log(result__.message);
+              else {
+                req.files.image.data = result__.message;
+                gcs.uploadImage({ req, name: result.message.img }, () => {});
+              }
+            });
           });
-        });
       }
     });
   } else {
