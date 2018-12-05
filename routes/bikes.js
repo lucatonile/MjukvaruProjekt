@@ -117,6 +117,12 @@ router.post('/removecomment/', (req, res) => {
   });
 });
 
+router.post('/ratecomment/', (req, res) => {
+  queries.rateComment(req, res, (result) => {
+    res.send(result.message);
+  });
+});
+
 router.post('/editcomment/', (req, res) => {
   queries.editComment(req, (result) => {
     if (result.error) res.send(result.message);

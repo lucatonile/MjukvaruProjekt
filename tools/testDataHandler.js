@@ -91,10 +91,9 @@ function generateUserData(index) {
   };
 }
 
-function insertData(num) {
+function insertUserData(num) {
   for (let i = 0; i < num; i += 1) {
     const user = new userModel.User(generateUserData(i));
-    const bike = new bikeModel.Bike(generateBikeData(i));
     user.save((err) => {
       if (err) {
         console.log(`Error: ${err}`);
@@ -102,6 +101,12 @@ function insertData(num) {
         console.log(`User ${num} added!`);
       }
     });
+  }
+}
+
+function insertBikeData(num) {
+  for (let i = 0; i < num; i += 1) {
+    const bike = new bikeModel.Bike(generateBikeData(i));
     bike.save((err) => {
       if (err) {
         console.log(`Error: ${err}`);
@@ -129,7 +134,8 @@ function clearUserData(req, res, callback) {
 }
 
 module.exports = {
-  insertData,
+  insertBikeData,
+  insertUserData,
   clearBikeData,
   clearUserData,
 };

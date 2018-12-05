@@ -3,9 +3,14 @@ const testData = require('../tools/testDataHandler');
 
 const router = express.Router();
 
-router.post('/addtestdata/', (req, res) => {
-  testData.insertData(req.body.count);
-  res.send(`${req.body.count} users and bikes added`);
+router.post('/addbiketestdata/', (req, res) => {
+  testData.insertBikeData(req.body.count);
+  res.send(`${req.body.count} users added`);
+});
+
+router.post('/addusertestdata/', (req, res) => {
+  testData.insertUserData(req.body.count);
+  res.send(`${req.body.count} bikes added`);
 });
 
 router.get('/clearuserdata/', (req, res) => {

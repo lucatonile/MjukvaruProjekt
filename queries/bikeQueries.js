@@ -268,37 +268,78 @@ function editComment(req, callback) {
   );
 }
 
-// TODO Validate input
-function rateComment(req, res, callback) {
-  let upScore = 0;
-  let downScore = 0;
-  try {
-    if (req.body.up !== undefined) upScore = JSON.parse(req.body.up);
-    if (req.body.down !== undefined) downScore = JSON.parse(req.body.down);
-  } catch (e) {
-    if (e instanceof SyntaxError) {
-      res.status(500).send(cbs.cbMsg(true, `Invalid input! ${e}`));
-      return;
-    }
-  }
+function rateCommentAux(req, res, cb, value) {
+  switch (value) {
+    case 'up':
+      bikeModel.Bike.findOneAndUpdate(
+        {
+          'comments._id': req.body.commentId,
+          'comments.rating.up.userId': { $ne: req.body.userId },
+        },
+        { $push: { 'comments.$.rating.up': { userId: req.body.userId } } },
+        { new: true },
+        (err, result) => {
+          if (err) {
+            console.log(`Error: ${err}`);
+            cb(cbs.cbMsg(true, err));
+          } else if (result === null) {
+            console.log('result is null');
+            cb(cbs.cbMsg(false, 'Result was null. Either no comment found or user already voted up'));
+          } else {
+            console.log(`Result: ${result}`);
+            cb(cbs.cbMsg(false, result));
+          }
+        },
+      ).populate('_id');
+      break;
 
-  bikeModel.Bike.findOneAndUpdate(
-    {
-      _id: req.body.bikeId,
-      'comments._id': req.body.commentId,
-    },
-    {
-      $inc: {
-        'comments.$.rating.up': upScore,
-        'comments.$.rating.down': downScore,
-      },
-    },
-    { new: true },
-    (err) => {
-      if (err) callback(cbs.cbMsg(true, err));
-      else callback(cbs.cbMsg(false, 'Rated comment!'));
-    },
-  );
+    case 'down':
+      bikeModel.Bike.findOneAndUpdate(
+        {
+          'comments._id': req.body.commentId,
+          'comments.rating.down.userId': { $ne: req.body.userId },
+        },
+        { $push: { 'comments.$.rating.down': { userId: req.body.userId } } },
+        { new: true },
+        (err, result) => {
+          if (err) {
+            console.log(`Error: ${err}`);
+            cb(cbs.cbMsg(true, err));
+          } else if (result === null) {
+            console.log('result is null');
+            cb(cbs.cbMsg(false, 'Result was null. Either no comment found or user already voted up'));
+          } else {
+            console.log(`Result: ${result}`);
+            cb(cbs.cbMsg(false, result));
+          }
+        },
+      ).populate('_id');
+      break;
+
+    case undefined:
+      cb(cbs.cbMsg(true, 'undefined direction value in rateUserCommentAux function'));
+      break;
+
+    default:
+      cb(cbs.cbMsg(true, 'incorrect direction value in rateUserCommentAux function'));
+  }
+}
+
+function rateComment(req, res, callback) {
+  switch (req.body.value) {
+    case undefined:
+      res.status(500).send(cbs.cbMsg(true, 'Value undefined'));
+      break;
+    case 'up':
+      console.log('rateComment case up');
+      rateCommentAux(req, res, callback, 'up');
+      break;
+    case 'down':
+      rateCommentAux(req, res, callback, 'down');
+      break;
+    default:
+      res.status(500).send(cbs.cbMsg(true, `Invalid value: ${req.body.value}`));
+  }
 }
 
 function getComments(req, callback) {
@@ -348,6 +389,7 @@ module.exports = {
   editComment,
   removeComment,
   getComments,
+  rateComment,
   rateComment,
   filterBikes,
 };

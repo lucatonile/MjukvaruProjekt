@@ -87,14 +87,20 @@ const bikeSchema = new mongoose.Schema({
       default: Date.now,
     },
     rating: {
-      up: {
-        type: Number,
-        default: 0,
-      },
-      down: {
-        type: Number,
-        default: 0,
-      },
+      up: [{
+        userId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User',
+          required: true,
+        },
+      }],
+      down: [{
+        userId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User',
+          required: true,
+        },
+      }],
     },
   }],
 });
