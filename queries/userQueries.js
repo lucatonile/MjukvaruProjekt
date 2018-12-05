@@ -1,5 +1,7 @@
 /* eslint-disable array-callback-return */
 const bcrypt = require('bcryptjs');
+const randomString = require('randomstring');
+const nodeMailer = require('nodemailer');
 const userModel = require('../models/user');
 const cbs = require('../tools/cbs');
 const gcs = require('../tools/gcs');
@@ -198,6 +200,42 @@ function updateProfilePic(userId, imageUrl, callback) {
   );
 }
 
+function resetPassword(req, res, callback) {
+  const pw = randomString.generate({
+    length: 32,
+    charset: 'abcdefghijklmnopqrstuvxyzABCDEFGHIJKLMNOPQRSTUVXYZ!#&/()_,.:;<>?£$@*^~12345678910',
+  });
+
+  req.body.password = pw;
+
+  updateUser(req, res, (result) => {
+    const { email } = result.message;
+
+    const transporter = nodeMailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_ADDRESS,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    });
+
+    const emailMessage = {
+      from: 'support@bikeini.com',
+      to: email,
+      subject: 'New Password',
+      text: `Your new password is: ${pw}`,
+    };
+
+    transporter.sendMail(emailMessage, (error) => {
+      if (error) {
+        callback(cbs.cbMsg(true, `Something went wrong when sending your new password to ${email}`));
+      } else {
+        callback(cbs.cbMsg(false, `An email containing your new password was sent to ${email}`));
+      }
+    });
+  });
+}
+
 module.exports = {
   getUserInfoEmail,
   getHighscore,
@@ -210,4 +248,5 @@ module.exports = {
   getUserInfo,
   incLostBikeCounter,
   updateProfilePic,
+  resetPassword,
 };

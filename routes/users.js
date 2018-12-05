@@ -60,4 +60,9 @@ router.post('/updateprofilepic/', (req, res) => {
   }
 });
 
+router.get('/resetpassword/', (req, res) => {
+  queries.resetPassword(req, res, (result) => {
+    res.send(result);
+  });
+});
 module.exports = router;
