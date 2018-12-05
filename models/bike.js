@@ -107,7 +107,6 @@ const bikeSchema = new mongoose.Schema({
 
 // Always attach `populate()` to `find()` calls
 bikeSchema.pre('find', function populateSubmitter() {
-  console.log('in PRE call for find');
   this.populate('submitter comments.author');
 });
 

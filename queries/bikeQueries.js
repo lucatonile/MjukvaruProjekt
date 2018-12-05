@@ -280,13 +280,10 @@ function rateCommentAux(req, res, cb, value) {
         { new: true },
         (err, result) => {
           if (err) {
-            console.log(`Error: ${err}`);
             cb(cbs.cbMsg(true, err));
           } else if (result === null) {
-            console.log('result is null');
             cb(cbs.cbMsg(false, 'Result was null. Either no comment found or user already voted up'));
           } else {
-            console.log(`Result: ${result}`);
             cb(cbs.cbMsg(false, result));
           }
         },
@@ -303,13 +300,10 @@ function rateCommentAux(req, res, cb, value) {
         { new: true },
         (err, result) => {
           if (err) {
-            console.log(`Error: ${err}`);
             cb(cbs.cbMsg(true, err));
           } else if (result === null) {
-            console.log('result is null');
             cb(cbs.cbMsg(false, 'Result was null. Either no comment found or user already voted up'));
           } else {
-            console.log(`Result: ${result}`);
             cb(cbs.cbMsg(false, result));
           }
         },
@@ -331,7 +325,6 @@ function rateComment(req, res, callback) {
       res.status(500).send(cbs.cbMsg(true, 'Value undefined'));
       break;
     case 'up':
-      console.log('rateComment case up');
       rateCommentAux(req, res, callback, 'up');
       break;
     case 'down':
@@ -389,7 +382,6 @@ module.exports = {
   editComment,
   removeComment,
   getComments,
-  rateComment,
   rateComment,
   filterBikes,
 };
