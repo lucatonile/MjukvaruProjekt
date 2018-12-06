@@ -1,9 +1,10 @@
 /* eslint-disable array-callback-return */
+/* eslint no-underscore-dangle: 0 */
 const bcrypt = require('bcryptjs');
-const randomString = require('randomstring');
 const nodeMailer = require('nodemailer');
 const userModel = require('../models/user');
 const cbs = require('../tools/cbs');
+const strings = require('../tools/strings');
 
 const DECIMAL_FLAG = 10;
 const DESCENDING_FLAG = -1;
@@ -116,6 +117,7 @@ function updateUser(req, res, callback) {
   const update = req.body;
   // eslint-disable-next-line no-underscore-dangle
   delete update._id;
+  delete update.email_username;
 
   // Only call hash function if a password was actually provided in the request.
   if (req.body.password !== undefined) {
@@ -200,22 +202,20 @@ function updateProfilePic(userId, imageUrl, callback) {
 }
 
 function resetPassword(req, res, callback) {
-  const pw = randomString.generate({
-    length: 32,
-    charset: 'abcdefghijklmnopqrstuvxyzABCDEFGHIJKLMNOPQRSTUVXYZ!#&/()_,.:;<>?£$@*^~12345678910',
-  });
-
+  const pw = strings.shuffleString('abcduvxyzABCDRSTUVXYZ!#/()_,.:<>?@*^12345678910');
   req.body.password = pw;
 
   // Verify username/mail
-  userModel.User.find(
+  userModel.User.findOne(
     {
       $or: [{ username: req.body.email_username }, { email: req.body.email_username }],
     },
-    (err, users) => {
+    (err, user) => {
       if (err) res.send(err);
-      else if (users.length === 0) callback(cbs.cbMsg(true, 'Username/Email not found'));
+      else if (user === null) callback(cbs.cbMsg(true, 'Username/Email not found'));
       else {
+        req.body.userId = String(user._id);
+
         // Update user password to the new one and send it to their mail
         updateUser(req, res, (result) => {
           const { email } = result.message;
@@ -229,7 +229,7 @@ function resetPassword(req, res, callback) {
           });
 
           const emailMessage = {
-            from: 'support@bikeini.com',
+            from: process.env.EMAIL_ADDRESS,
             to: email,
             subject: 'New Password',
             text: `Your new password is: ${pw}`,
@@ -237,7 +237,7 @@ function resetPassword(req, res, callback) {
 
           transporter.sendMail(emailMessage, (error) => {
             if (error) {
-              callback(cbs.cbMsg(true, `Something went wrong when sending your new password to ${email}`));
+              callback(cbs.cbMsg(true, error));
             } else {
               callback(cbs.cbMsg(false, `An email containing your new password was sent to ${email}`));
             }
