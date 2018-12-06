@@ -21,6 +21,9 @@ function getLocation(lat, long) {
   if (lat === undefined || long === undefined) {
     return { error: 'Lat or long undefined or wrong type' };
   }
+  if (!process.env.GOOGLE_API_KEY) {
+    return { error: 'Local env variable Google API Key not set' };
+  }
 
   // Parse POST request lat/long as ints to validate their value.
   const status = validateCoordinates(lat, long);
