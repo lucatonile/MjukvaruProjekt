@@ -4,20 +4,14 @@ const XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 // Validate that lat, long coordinates are valid.
 //  lat is -90 < lat < 90 and long is -180 < long < 180.
 function validateCoordinates(lat, long) {
-  console.log('validating coordinates');
   const latInt = parseInt(lat, 10);
   const longInt = parseInt(long, 10);
-  console.log(latInt);
-  console.log(longInt);
   if (latInt < -90 || latInt > 90 || Number.isNaN(latInt)) {
-    console.log('returning lat out of bounds or nan');
     return { error: 'Lat out of bounds or not a number' };
   }
   if (longInt < -180 || longInt > 180 || Number.isNaN(longInt)) {
-    console.log('returning log out of bounds or nan');
     return { error: 'Long out of bounds or not a number' };
   }
-  console.log('returning true');
   return 'success';
 }
 

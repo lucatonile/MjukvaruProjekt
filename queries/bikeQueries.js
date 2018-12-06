@@ -239,7 +239,6 @@ function addComment(req, callback) {
 
     // If lat and long is provided, validate and add it to the comment location.
     if (reverseGeolocation.validateCoordinates(req.body.lat, req.body.long) === 'success') {
-      console.log('validateCoordinates returned sucess');
       comment.location = {
         lat: req.body.lat,
         long: req.body.long,
