@@ -4,7 +4,6 @@ const randomString = require('randomstring');
 const nodeMailer = require('nodemailer');
 const userModel = require('../models/user');
 const cbs = require('../tools/cbs');
-const gcs = require('../tools/gcs');
 
 const DECIMAL_FLAG = 10;
 const DESCENDING_FLAG = -1;
@@ -247,8 +246,6 @@ function resetPassword(req, res, callback) {
       }
     },
   );
-
-  
 }
 
 module.exports = {

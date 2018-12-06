@@ -288,70 +288,62 @@ function editComment(req, callback) {
   );
 }
 
-function rateCommentAux(req, res, cb, value) {
-  switch (value) {
-    case 'up':
-      bikeModel.Bike.findOneAndUpdate(
-        {
-          'comments._id': req.body.commentId,
-          'comments.rating.up.userId': { $ne: req.body.userId },
-        },
-        { $push: { 'comments.$.rating.up': { userId: req.body.userId } } },
-        { new: true },
-        (err, result) => {
-          if (err) {
-            cb(cbs.cbMsg(true, err));
-          } else if (result === null) {
-            cb(cbs.cbMsg(false, 'Result was null. Either no comment found or user already voted up'));
-          } else {
-            cb(cbs.cbMsg(false, result));
-          }
-        },
-      ).populate('_id');
-      break;
-
-    case 'down':
-      bikeModel.Bike.findOneAndUpdate(
-        {
-          'comments._id': req.body.commentId,
-          'comments.rating.down.userId': { $ne: req.body.userId },
-        },
-        { $push: { 'comments.$.rating.down': { userId: req.body.userId } } },
-        { new: true },
-        (err, result) => {
-          if (err) {
-            cb(cbs.cbMsg(true, err));
-          } else if (result === null) {
-            cb(cbs.cbMsg(false, 'Result was null. Either no comment found or user already voted up'));
-          } else {
-            cb(cbs.cbMsg(false, result));
-          }
-        },
-      ).populate('_id');
-      break;
-
-    case undefined:
-      cb(cbs.cbMsg(true, 'undefined direction value in rateUserCommentAux function'));
-      break;
-
-    default:
-      cb(cbs.cbMsg(true, 'incorrect direction value in rateUserCommentAux function'));
-  }
+// Remove the rating specified by upOrDown from user userId on comment commentId.
+function removeRatingAux(commentId, userId, cb, upOrDown) {
+  const queryPath = `comments.rating.${upOrDown}.userId`;
+  const pullPath = `comments.$.rating.${upOrDown}`;
+  bikeModel.Bike.updateOne(
+    {
+      'comments._id': commentId,
+      [queryPath]: userId,
+    },
+    { $pull: { [pullPath]: { userId } } },
+    (err1) => {
+      if (err1) {
+        cb(cbs.cbMsg(false, err1));
+      } else {
+        cb(cbs.cbMsg(true, `${upOrDown}-vote removed!`));
+      }
+    },
+  );
 }
 
+// If no rating of given value (up or donw) is cast, add it. Otherwise remove the existing rating.
+function rateCommentAux(req, res, cb) {
+  const findUpdateQueryPath = `comments.rating.${req.body.value}.userId`;
+  const findUpdatePushPath = `comments.$.rating.${req.body.value}`;
+
+  bikeModel.Bike.findOneAndUpdate(
+    {
+      'comments._id': req.body.commentId,
+      [findUpdateQueryPath]: { $ne: req.body.userId },
+    },
+    { $push: { [findUpdatePushPath]: { userId: req.body.userId } } },
+    { new: true },
+    (err, result) => {
+      if (err) {
+        cb(cbs.cbMsg(true, err));
+      } else if (result === null) {
+        // Couldnt add vote because it was already there.
+        // Instead call function to remove vote.
+        removeRatingAux(req.body.commentId, req.body.userId, cb, req.body.value);
+      } else {
+        // Downvote was added. Returning the bike object.
+        cb(cbs.cbMsg(false, result));
+      }
+    },
+  ).populate('_id');
+}
+
+// Validate direction input and call auxillary function.
 function rateComment(req, res, callback) {
-  switch (req.body.value) {
-    case undefined:
-      res.status(500).send(cbs.cbMsg(true, 'Value undefined'));
-      break;
-    case 'up':
-      rateCommentAux(req, res, callback, 'up');
-      break;
-    case 'down':
-      rateCommentAux(req, res, callback, 'down');
-      break;
-    default:
-      res.status(500).send(cbs.cbMsg(true, `Invalid value: ${req.body.value}`));
+  const validValues = ['up', 'down'];
+  if (req.body.value === undefined) {
+    res.status(500).send(cbs.cbMsg(true, 'Value undefined'));
+  } else if (validValues.includes(req.body.value)) {
+    rateCommentAux(req, res, callback);
+  } else {
+    res.status(500).send(cbs.cbMsg(true, `Invalid value: ${req.body.value}`));
   }
 }
 
