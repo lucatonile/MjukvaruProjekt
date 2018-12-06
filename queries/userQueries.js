@@ -237,7 +237,7 @@ function resetPassword(req, res, callback) {
 
           transporter.sendMail(emailMessage, (error) => {
             if (error) {
-              callback(cbs.cbMsg(true, error));
+              callback(cbs.cbMsg(true, `Something went wrong sending your new password to ${email}`));
             } else {
               callback(cbs.cbMsg(false, `An email containing your new password was sent to ${email}`));
             }
