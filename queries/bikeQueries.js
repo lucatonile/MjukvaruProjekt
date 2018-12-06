@@ -236,7 +236,6 @@ function filterBikes(req, res, callback) {
   TODO break this out to a separate file.
 */
 
-
 function addComment(req, callback) {
   if (req.body.bikeId === undefined) {
     callback(cbs.cbMsg(true, 'bikeId not provided!'));
