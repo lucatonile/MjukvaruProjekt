@@ -1,7 +1,6 @@
 /* eslint-disable array-callback-return */
 /* eslint no-underscore-dangle: 0 */
 const bcrypt = require('bcryptjs');
-const randomString = require('randomstring');
 const nodeMailer = require('nodemailer');
 const userModel = require('../models/user');
 const cbs = require('../tools/cbs');
