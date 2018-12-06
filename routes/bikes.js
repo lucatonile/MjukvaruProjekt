@@ -27,6 +27,15 @@ router.post('/preaddbike/', (req, res) => {
 });
 
 router.post('/addbike/', (req, res) => {
+  let { body } = req;
+  const { userId } = req.body;
+
+  if (body.json !== undefined) {
+    body = JSON.parse(body.json);
+    req.body = body;
+    req.body.userId = userId;
+  }
+
   if (req.files !== undefined && req.files !== null) {
     gcs.uploadImage({ req }, (result) => {
       if (result.error) res.send(result.message);
