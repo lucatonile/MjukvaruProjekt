@@ -80,6 +80,10 @@ const bikeSchema = new mongoose.Schema({
     isReplyToCommentId: {
       type: mongoose.Schema.Types.ObjectId,
     },
+    location: {
+      lat: Number,
+      long: Number,
+    },
     body: {
       type: String,
       required: true,
