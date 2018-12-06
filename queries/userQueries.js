@@ -208,32 +208,47 @@ function resetPassword(req, res, callback) {
 
   req.body.password = pw;
 
-  updateUser(req, res, (result) => {
-    const { email } = result.message;
+  // Verify username/mail
+  userModel.User.find(
+    {
+      $or: [{ username: req.body.email_username }, { email: req.body.email_username }],
+    },
+    (err, users) => {
+      if (err) res.send(err);
+      else if (users.length === 0) callback(cbs.cbMsg(true, 'Username/Email not found'));
+      else {
+        // Update user password to the new one and send it to their mail
+        updateUser(req, res, (result) => {
+          const { email } = result.message;
 
-    const transporter = nodeMailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_ADDRESS,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-    });
+          const transporter = nodeMailer.createTransport({
+            service: 'gmail',
+            auth: {
+              user: process.env.EMAIL_ADDRESS,
+              pass: process.env.EMAIL_PASSWORD,
+            },
+          });
 
-    const emailMessage = {
-      from: 'support@bikeini.com',
-      to: email,
-      subject: 'New Password',
-      text: `Your new password is: ${pw}`,
-    };
+          const emailMessage = {
+            from: 'support@bikeini.com',
+            to: email,
+            subject: 'New Password',
+            text: `Your new password is: ${pw}`,
+          };
 
-    transporter.sendMail(emailMessage, (error) => {
-      if (error) {
-        callback(cbs.cbMsg(true, `Something went wrong when sending your new password to ${email}`));
-      } else {
-        callback(cbs.cbMsg(false, `An email containing your new password was sent to ${email}`));
+          transporter.sendMail(emailMessage, (error) => {
+            if (error) {
+              callback(cbs.cbMsg(true, `Something went wrong when sending your new password to ${email}`));
+            } else {
+              callback(cbs.cbMsg(false, `An email containing your new password was sent to ${email}`));
+            }
+          });
+        });
       }
-    });
-  });
+    },
+  );
+
+  
 }
 
 module.exports = {
