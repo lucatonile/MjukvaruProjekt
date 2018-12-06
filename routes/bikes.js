@@ -27,6 +27,15 @@ router.post('/preaddbike/', (req, res) => {
 });
 
 router.post('/addbike/', (req, res) => {
+  let { body } = req;
+  const { userId } = req.body;
+
+  if (body.json !== undefined) {
+    body = JSON.parse(body.json);
+    req.body = body;
+    req.body.userId = userId;
+  }
+
   if (req.files !== undefined && req.files !== null) {
     gcs.uploadImage({ req, thumbnail: { width: 250, height: 250 } }, (result) => {
       if (result.error) res.send(result.message);
@@ -67,30 +76,6 @@ router.post('/addbike/', (req, res) => {
   }
 });
 
-router.post('/addbike2/', (req, res) => {
-  const data = JSON.parse(req.body.json);
-  data.userId = req.body.userId;
-
-  if (req.files !== undefined && req.files !== null) {
-    gcs.uploadImage(req, (result) => {
-      if (result.error) res.send(result.message);
-      else {
-        data.image_url = process.env.GCS_URL + result.message;
-
-        queries.addBike2(data, (result_) => {
-          if (result_.error) res.send(result_.message);
-          else res.send(result_.message);
-        });
-      }
-    });
-  } else {
-    queries.addBike2(data, (result) => {
-      if (result.error) res.send(result.message);
-      else res.send(result.message);
-    });
-  }
-});
-
 router.post('/removebike/', (req, res) => {
   queries.removeBike(req, res, (result) => { res.send(result.message); });
 });
@@ -111,34 +96,6 @@ router.get('/getbikes/', (req, res) => {
 
 router.get('/getmybikes/', (req, res) => {
   queries.getMyBikes(req, res, (result) => {
-    if (result.error) res.send(result.message);
-    else res.send(result.message);
-  });
-});
-
-router.post('/addcomment/', (req, res) => {
-  queries.addComment(req, (result) => {
-    if (result.error) res.send(result.message);
-    else res.send(result.message);
-  });
-});
-
-router.post('/removecomment/', (req, res) => {
-  queries.removeComment(req, (result) => {
-    if (result.error) res.send(result.message);
-    else res.send(result.message);
-  });
-});
-
-router.post('/editcomment/', (req, res) => {
-  queries.editComment(req, (result) => {
-    if (result.error) res.send(result.message);
-    else res.send(result.message);
-  });
-});
-
-router.post('/getcomments/', (req, res) => {
-  queries.getComments(req, (result) => {
     if (result.error) res.send(result.message);
     else res.send(result.message);
   });
@@ -180,6 +137,45 @@ router.post('/getmatchingbikes/', (req, res) => {
         else res.send(result_.message);
       });
     }
+  });
+});
+
+/*
+  Comment section
+  TODO break out into separate file.
+*/
+
+router.post('/addcomment/', (req, res) => {
+  queries.addComment(req, (result) => {
+    if (result.error) res.send(result.message);
+    else res.send(result.message);
+  });
+});
+
+router.post('/removecomment/', (req, res) => {
+  queries.removeComment(req, (result) => {
+    if (result.error) res.send(result.message);
+    else res.send(result.message);
+  });
+});
+
+router.post('/ratecomment/', (req, res) => {
+  queries.rateComment(req, res, (result) => {
+    res.send(result.message);
+  });
+});
+
+router.post('/editcomment/', (req, res) => {
+  queries.editComment(req, (result) => {
+    if (result.error) res.send(result.message);
+    else res.send(result.message);
+  });
+});
+
+router.post('/getcomments/', (req, res) => {
+  queries.getComments(req, (result) => {
+    if (result.error) res.send(result.message);
+    else res.send(result.message);
   });
 });
 

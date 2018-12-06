@@ -73,4 +73,10 @@ router.post('/updateprofilepic/', (req, res) => {
   }
 });
 
+router.post('/resetpassword/', (req, res) => {
+  queries.resetPassword(req, res, (result) => {
+    res.send(result);
+  });
+});
+
 module.exports = router;

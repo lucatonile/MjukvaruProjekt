@@ -45,19 +45,6 @@ function addBike(req, res, callback) {
   }
 }
 
-// long-lat not implemented in this one
-function addBike2(data, callback) {
-  // Model requires submitter Id
-  const bikeData = data;
-  bikeData.submitter = data.userId;
-
-  const bike = new bikeModel.Bike(bikeData);
-  bike.save((err) => {
-    if (err) callback(cbs.cbMsg(true, err));
-    else callback(cbs.cbMsg(false, { message: 'Success in adding bike!' }));
-  });
-}
-
 function updateBike(req, callback) {
   if (req.body.type !== undefined && (req.body.type !== 'FOUND' && req.body.type !== 'STOLEN')) {
     callback(cbs.cbMsg(true, 'type must be specified as either STOLEN or FOUND'));
@@ -79,8 +66,14 @@ function getBikesWithIdsOrdered(ids, callback) {
   ];
 
   bikeModel.Bike.aggregate(query, (err, bikes) => {
-    if (err) callback(cbs.cbMsg(true, err));
-    else callback(cbs.cbMsg(false, bikes));
+    if (err) {
+      callback(cbs.cbMsg(true, err));
+    } else {
+      bikeModel.Bike.populate(bikes, 'submitter', (err1, populatedBikes) => {
+        if (err1) callback(cbs.cbMsg(true, err1));
+        else callback(cbs.cbMsg(false, populatedBikes));
+      });
+    }
   });
 }
 
@@ -90,28 +83,28 @@ function getBike(req, res, callback) {
     if (err) callback(cbs.cbMsg(true, err));
     else if (!bike) callback(cbs.cbMsg(false, 'Bike not found'));
     else callback(cbs.cbMsg(false, bike));
-  }).populate('comments.author submitter');
+  });
 }
 
 function getBikes(data, callback) {
   bikeModel.Bike.find((err, bikes) => {
     if (err) callback(cbs.cbMsg(true, err));
     else callback(cbs.cbMsg(false, bikes));
-  }).populate('comments.author submitter');
+  });
 }
 
 function getMyBikes(req, res, callback) {
   bikeModel.Bike.find({ submitter: req.body.userId }, (err, bikes) => {
     if (err) callback(cbs.cbMsg(true, err));
     else callback(cbs.cbMsg(false, bikes));
-  }).populate('submitter').populate('comments.author');
+  });
 }
 
 function getStolenBikes(data, callback) {
   bikeModel.Bike.find({ type: 'STOLEN', active: true }, (err, bikes) => {
     if (err) callback(cbs.cbMsg(true, err));
     else callback(cbs.cbMsg(false, bikes));
-  }).populate('submitter').populate('comments.author');
+  });
 }
 
 function getFoundBikes(data, callback) {
@@ -119,7 +112,7 @@ function getFoundBikes(data, callback) {
     (err, bikes) => {
       if (err) callback(cbs.cbMsg(true, err));
       else callback(cbs.cbMsg(false, bikes));
-    }).populate('submitter').populate('comments.author');
+    });
 }
 
 function getMatchingBikes(data, callback) {
@@ -216,6 +209,23 @@ function removeBike(req, res, callback) {
   }
 }
 
+// Search for bikes in bikeModel with features matching the parameters provided by the caller.
+function filterBikes(req, res, callback) {
+  if (req.body === undefined) { callback(cbs.cbMsg(true, 'Req.body undefined!')); }
+  delete req.body.userId;
+
+  bikeModel.Bike.find(req.body, (err, result) => {
+    if (err) cbs.cbMsg(true, err);
+    else if (result === null) callback(cbs.cbMsg(false, 'Nothing found!'));
+    else res.send(cbs.cbMsg(false, result));
+  });
+}
+
+/*
+  Comment section
+  TODO break this out to a separate file.
+*/
+
 function addComment(req, callback) {
   if (req.body.bikeId === undefined) {
     callback(cbs.cbMsg(true, 'bikeId not provided!'));
@@ -226,6 +236,9 @@ function addComment(req, callback) {
       author: req.body.userId,
       body: req.body.body,
     };
+
+    // If comment is a reply to another comment, set the id of comment it replies to.
+    if (req.body.replyCommentId) comment.isReplyToCommentId = req.body.replyCommentId;
 
     bikeModel.Bike.findOneAndUpdate({ _id: req.body.bikeId }, { $push: { comments: comment } },
       { upsert: false, new: true }, (err, result) => {
@@ -265,37 +278,63 @@ function editComment(req, callback) {
   );
 }
 
-// TODO Validate input
-function rateComment(req, res, callback) {
-  let upScore = 0;
-  let downScore = 0;
-  try {
-    if (req.body.up !== undefined) upScore = JSON.parse(req.body.up);
-    if (req.body.down !== undefined) downScore = JSON.parse(req.body.down);
-  } catch (e) {
-    if (e instanceof SyntaxError) {
-      res.status(500).send(cbs.cbMsg(true, `Invalid input! ${e}`));
-      return;
-    }
-  }
+// Remove the rating specified by upOrDown from user userId on comment commentId.
+function removeRatingAux(commentId, userId, cb, upOrDown) {
+  const queryPath = `comments.rating.${upOrDown}.userId`;
+  const pullPath = `comments.$.rating.${upOrDown}`;
+  bikeModel.Bike.updateOne(
+    {
+      'comments._id': commentId,
+      [queryPath]: userId,
+    },
+    { $pull: { [pullPath]: { userId } } },
+    (err) => {
+      if (err) {
+        cb(cbs.cbMsg(false, err));
+      } else {
+        cb(cbs.cbMsg(true, `${upOrDown}-vote removed!`));
+      }
+    },
+  );
+}
+
+// If no rating of given value (up or donw) is cast, add it. Otherwise remove the existing rating.
+function rateCommentAux(req, res, cb) {
+  const findUpdateQueryPath = `comments.rating.${req.body.value}.userId`;
+  const findUpdatePushPath = `comments.$.rating.${req.body.value}`;
 
   bikeModel.Bike.findOneAndUpdate(
     {
-      _id: req.body.bikeId,
       'comments._id': req.body.commentId,
+      [findUpdateQueryPath]: { $ne: req.body.userId },
     },
-    {
-      $inc: {
-        'comments.$.rating.up': upScore,
-        'comments.$.rating.down': downScore,
-      },
-    },
+    { $push: { [findUpdatePushPath]: { userId: req.body.userId } } },
     { new: true },
-    (err) => {
-      if (err) callback(cbs.cbMsg(true, err));
-      else callback(cbs.cbMsg(false, 'Rated comment!'));
+    (err, result) => {
+      if (err) {
+        cb(cbs.cbMsg(true, err));
+      } else if (result === null) {
+        // Couldnt add vote because it was already there.
+        // Instead call function to remove vote.
+        removeRatingAux(req.body.commentId, req.body.userId, cb, req.body.value);
+      } else {
+        // Downvote was added. Returning the bike object.
+        cb(cbs.cbMsg(false, result));
+      }
     },
-  );
+  ).populate('_id');
+}
+
+// Validate direction input and call auxillary function.
+function rateComment(req, res, callback) {
+  const validValues = ['up', 'down'];
+  if (req.body.value === undefined) {
+    res.status(500).send(cbs.cbMsg(true, 'Value undefined'));
+  } else if (validValues.includes(req.body.value)) {
+    rateCommentAux(req, res, callback);
+  } else {
+    res.status(500).send(cbs.cbMsg(true, `Invalid value: ${req.body.value}`));
+  }
 }
 
 function getComments(req, callback) {
@@ -317,21 +356,8 @@ function getComments(req, callback) {
   }
 }
 
-// Search for bikes in bikeModel with features matching the parameters provided by the caller.
-function filterBikes(req, res, callback) {
-  if (req.body === undefined) { callback(cbs.cbMsg(true, 'Req.body undefined!')); }
-  delete req.body.userId;
-
-  bikeModel.Bike.find(req.body, (err, result) => {
-    if (err) cbs.cbMsg(true, err);
-    else if (result === null) callback(cbs.cbMsg(false, 'Nothing found!'));
-    else res.send(cbs.cbMsg(false, result));
-  }).populate('submitter');
-}
-
 module.exports = {
   addBike,
-  addBike2,
   removeBike,
   updateBike,
   getBike,

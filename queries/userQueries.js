@@ -1,8 +1,10 @@
 /* eslint-disable array-callback-return */
+/* eslint no-underscore-dangle: 0 */
 const bcrypt = require('bcryptjs');
+const nodeMailer = require('nodemailer');
 const userModel = require('../models/user');
 const cbs = require('../tools/cbs');
-const gcs = require('../tools/gcs');
+const strings = require('../tools/strings');
 
 const DECIMAL_FLAG = 10;
 const DESCENDING_FLAG = -1;
@@ -115,6 +117,7 @@ function updateUser(req, res, callback) {
   const update = req.body;
   // eslint-disable-next-line no-underscore-dangle
   delete update._id;
+  delete update.email_username;
 
   // Only call hash function if a password was actually provided in the request.
   if (req.body.password !== undefined) {
@@ -203,6 +206,53 @@ function updateProfilePic(userId, imageUrls, callback) {
   );
 }
 
+function resetPassword(req, res, callback) {
+  const pw = strings.shuffleString('abcduvxyzABCDRSTUVXYZ!#/()_,.:<>?@*^12345678910');
+  req.body.password = pw;
+
+  // Verify username/mail
+  userModel.User.findOne(
+    {
+      $or: [{ username: req.body.email_username }, { email: req.body.email_username }],
+    },
+    (err, user) => {
+      if (err) res.send(err);
+      else if (user === null) callback(cbs.cbMsg(true, 'Username/Email not found'));
+      else {
+        req.body.userId = String(user._id);
+
+        // Update user password to the new one and send it to their mail
+        updateUser(req, res, (result) => {
+          const { email } = result.message;
+
+          const transporter = nodeMailer.createTransport({
+            service: 'gmail',
+            auth: {
+              user: process.env.EMAIL_ADDRESS,
+              pass: process.env.EMAIL_PASSWORD,
+            },
+          });
+
+          const emailMessage = {
+            from: process.env.EMAIL_ADDRESS,
+            to: email,
+            subject: 'New Password',
+            text: `Your new password is: ${pw}`,
+          };
+
+          transporter.sendMail(emailMessage, (error) => {
+            if (error) {
+              callback(cbs.cbMsg(true, `Something went wrong sending your new password to ${email}`));
+            } else {
+              callback(cbs.cbMsg(false, `An email containing your new password was sent to ${email}`));
+            }
+          });
+        });
+      }
+    },
+  );
+}
+
 module.exports = {
   getUserInfoEmail,
   getHighscore,
@@ -215,4 +265,5 @@ module.exports = {
   getUserInfo,
   incLostBikeCounter,
   updateProfilePic,
+  resetPassword,
 };
