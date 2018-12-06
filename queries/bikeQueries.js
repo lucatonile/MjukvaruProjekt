@@ -298,9 +298,9 @@ function removeRatingAux(commentId, userId, cb, upOrDown) {
       [queryPath]: userId,
     },
     { $pull: { [pullPath]: { userId } } },
-    (err1) => {
-      if (err1) {
-        cb(cbs.cbMsg(false, err1));
+    (err) => {
+      if (err) {
+        cb(cbs.cbMsg(false, err));
       } else {
         cb(cbs.cbMsg(true, `${upOrDown}-vote removed!`));
       }
