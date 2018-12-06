@@ -11,22 +11,26 @@ const storage = new Storage({
 
 const bucketName = process.env.GCS_PROJECTID;
 
-function uploadImage(req, callback) {
-  const filename = uuidv1();
+// args = { req: http request(json), name: explicit filename (optional) }
+function uploadImage(args, callback) {
+  if (args.req === undefined) callback(cbs.cbMsg(true, 'no request object found'));
+
+  let filename = uuidv1();
+  if (args.name !== undefined) filename = args.name;
   const file = storage.bucket(bucketName).file(filename);
 
   // Verify that uploaded file is image
-  if (req.files.image.mimetype.split('/')[0] !== 'image') {
+  if (args.req.files.image.mimetype.split('/')[0] !== 'image') {
     callback(cbs.cbMsg(true, 'File must be an image!'));
   } else {
     const metadata = {
-      contentType: req.files.image.mimetype,
+      contentType: args.req.files.image.mimetype,
     };
 
     // Upload file to gcs and mongodb.
     // To get link to file, use:
     // http://storage.googleapis.com/bikeini/filename (uuid)
-    file.save(req.files.image.data, {
+    file.save(args.req.files.image.data, {
       public: true,
       metadata,
     }, (err) => {

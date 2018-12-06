@@ -2,6 +2,7 @@ const express = require('express');
 const queries = require('../queries/userQueries');
 const cbs = require('../tools/cbs');
 const gcs = require('../tools/gcs');
+const imgOptimizer = require('../tools/imgOptimizer');
 
 const router = express.Router();
 
@@ -45,13 +46,22 @@ router.post('/setuserlocation/', (req, res) => {
 
 router.post('/updateprofilepic/', (req, res) => {
   if (req.files !== undefined && req.files !== null) {
-    gcs.uploadImage(req, (result) => {
+    gcs.uploadImage({ req }, (result) => {
       if (result.error) res.send(result);
       else {
         const imageUrl = process.env.GCS_URL + result.message;
 
         queries.updateProfilePic(req.body.userId, imageUrl, (result_) => {
+          // Done uploading profile pic, send response
           res.send(result_);
+
+          // Behind the hood, optimize image and replace old image with optimized
+          imgOptimizer.minimize(req.files.image.data, (miniImg) => {
+            if (miniImg) {
+              req.files.image.data = miniImg;
+              gcs.uploadImage({ req, name: result.message }, () => {});
+            }
+          });
         });
       }
     });

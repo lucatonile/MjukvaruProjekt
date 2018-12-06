@@ -4,6 +4,7 @@ const express = require('express');
 const queries = require('../queries/bikeQueries');
 const incLostBikesCounter = require('../queries/userQueries').incLostBikeCounter;
 const gcs = require('../tools/gcs');
+const imgOptimizer = require('../tools/imgOptimizer');
 
 const router = express.Router();
 
@@ -27,17 +28,26 @@ router.post('/preaddbike/', (req, res) => {
 
 router.post('/addbike/', (req, res) => {
   if (req.files !== undefined && req.files !== null) {
-    gcs.uploadImage(req, (result) => {
+    gcs.uploadImage({ req }, (result) => {
       if (result.error) res.send(result.message);
       else {
         req.body.image_url = process.env.GCS_URL + result.message;
-
         queries.addBike(req, res, (result_) => {
           if (result_.error) {
             res.send(result_.message);
           } else {
             if (req.body.type === STOLEN_FLAG) incLostBikesCounter(req.body.userId);
-            res.send(result_.message);
+
+            // Done uploading profile pic, send response
+            res.send(result_);
+
+            // Behind the hood, optimize image and replace old image with optimized
+            imgOptimizer.minimize(req.files.image.data, (miniImg) => {
+              if (miniImg) {
+                req.files.image.data = miniImg;
+                gcs.uploadImage({ req, name: result.message }, () => {});
+              }
+            });
           }
         });
       }
