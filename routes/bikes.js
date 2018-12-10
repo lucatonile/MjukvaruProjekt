@@ -37,28 +37,43 @@ router.post('/addbike/', (req, res) => {
   }
 
   if (req.files !== undefined && req.files !== null) {
-    gcs.uploadImage({ req }, (result) => {
-      if (result.error) res.send(result.message);
+    gcs.generateUrlIds((urlResult) => {
+      if (urlResult.error) res.send(urlResult);
       else {
-        req.body.image_url = process.env.GCS_URL + result.message;
-        queries.addBike(req, res, (result_) => {
-          if (result_.error) {
-            res.send(result_.message);
-          } else {
+        req.body.image_url = process.env.GCS_URL + urlResult.message.img;
+        req.body.thumbnail_url = process.env.GCS_URL + urlResult.message.thumbnail;
+
+        queries.addBike(req, res,
+          (addResult) => {
             if (req.body.type === STOLEN_FLAG) incLostBikesCounter(req.body.userId);
+            // Done uploading bike pic, send response
+            res.send(addResult);
 
-            // Done uploading profile pic, send response
-            res.send(result_);
-
-            // Behind the hood, optimize image and replace old image with optimized
-            imgOptimizer.minimize(req.files.image.data, (miniImg) => {
-              if (miniImg) {
-                req.files.image.data = miniImg;
-                gcs.uploadImage({ req, name: result.message }, () => {});
-              }
-            });
-          }
-        });
+            // Behind the hood, optimize image, create thumbnail and upload to GCS
+            if (!addResult.error) {
+              imgOptimizer.minimize(req.files.image.data, (minResult) => {
+                if (minResult.error) {
+                  // handle minResult error
+                } else {
+                  req.files.image.data = minResult.message;
+                  gcs.uploadImage(
+                    {
+                      req,
+                      imgName: urlResult.message.img,
+                      thumbnail: {
+                        name: urlResult.message.thumbnail,
+                        width: parseInt(process.env.BIKE_THUMBNAIL_WIDTH, 10),
+                        height: parseInt(process.env.BIKE_THUMBNAIL_HEIGHT, 10),
+                      },
+                    },
+                    (uploadResult) => {
+                      // handle uploadResult error
+                    },
+                  );
+                }
+              });
+            }
+          });
       }
     });
   } else {
@@ -66,7 +81,7 @@ router.post('/addbike/', (req, res) => {
       if (result.error) {
         res.send(result.message);
       } else {
-        incLostBikesCounter(req.body.userId);
+        if (req.body.type === STOLEN_FLAG) incLostBikesCounter(req.body.userId);
         res.send(result.message);
       }
     });

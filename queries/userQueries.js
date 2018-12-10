@@ -189,10 +189,15 @@ function incLostBikeCounter(userId) {
   );
 }
 
-function updateProfilePic(userId, imageUrl, callback) {
+function updateProfilePic(userId, imageUrls, callback) {
   userModel.User.findOneAndUpdate(
     { _id: userId },
-    { avatar_url: imageUrl },
+    {
+      avatar_url: {
+        img: imageUrls.img,
+        thumbnail: imageUrls.thumbnail,
+      },
+    },
     { new: true, projection: { avatar_url: 1 } },
     (err, user) => {
       if (err) callback(cbs.cbMsg(true, err));
@@ -237,7 +242,7 @@ function resetPassword(req, res, callback) {
 
           transporter.sendMail(emailMessage, (error) => {
             if (error) {
-              callback(cbs.cbMsg(true, error));
+              callback(cbs.cbMsg(true, `Something went wrong sending your new password to ${email}`));
             } else {
               callback(cbs.cbMsg(false, `An email containing your new password was sent to ${email}`));
             }
