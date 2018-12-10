@@ -11,7 +11,10 @@ function addBike(req, res, callback) {
   // Model requires submitter Id
   const bikeData = req.body;
   bikeData.submitter = req.body.userId;
-
+  bikeData.image_url = {
+    img: req.body.image_url,
+    thumbnail: req.body.thumbnail_url,
+  };
   const locations = reverseGeolocation.getLocation(req.body.lat, req.body.long);
 
   if (locations.error !== undefined) {
@@ -184,6 +187,14 @@ function getMatchingBikes(data, callback) {
       },
     },
     {
+      $match: {
+        score: {
+          // score = number_of_keyword_matches
+          $gte: parseInt(process.env.MINIMUM_BIKEMATCH_SCORE, 10),
+        },
+      },
+    },
+    {
       $limit: matchLimit,
     },
   ], (err, bikes) => {
@@ -236,6 +247,14 @@ function addComment(req, callback) {
 
     // If comment is a reply to another comment, set the id of comment it replies to.
     if (req.body.replyCommentId) comment.isReplyToCommentId = req.body.replyCommentId;
+
+    // If lat and long is provided, validate and add it to the comment location.
+    if (reverseGeolocation.validateCoordinates(req.body.lat, req.body.long) === 'success') {
+      comment.location = {
+        lat: req.body.lat,
+        long: req.body.long,
+      };
+    }
 
     bikeModel.Bike.findOneAndUpdate({ _id: req.body.bikeId }, { $push: { comments: comment } },
       { upsert: false, new: true }, (err, result) => {
