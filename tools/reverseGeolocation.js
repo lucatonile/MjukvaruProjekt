@@ -43,19 +43,40 @@ function getLocation(lat, long) {
     xmlHttp.send(null);
     return xmlHttp.responseText;
   }
+  const unParsedResult = httpGet(url);
+  const result = JSON.parse(unParsedResult);
 
-  const result = JSON.parse(httpGet(url));
+  const address_components = result.results[0].address_components;
 
-  // Try populating location with the data from the API call.
-  let locations = null;
-  try {
-    locations = {
-      city: result.results[0].address_components[3].long_name,
-      neighborhood: result.results[0].address_components[2].long_name,
-      street: result.results[0].address_components[1].long_name,
-    };
-  } catch (e) {
-    locations = { error: `Error: ${e}, could not get correct parameters from geolocation api return` };
+  const locations = {
+    city: '',
+    neighborhood: '',
+    street: '',
+  };
+
+  for (let i = 0; i < address_components.length; i += 1) {
+    for (let j = 0; j < address_components[i].types.length; j += 1) {
+      console.log(address_components[i].types[j]);
+      console.log(address_components[i]);
+      if (address_components[i].types[j].includes('sublocality')) {
+        locations.neighborhood = address_components[i].long_name;
+        console.log('!!!');
+        console.log(`adding a sublocality: ${locations.neighborhood}`);
+        console.log('!!!');
+      }
+      if (address_components[i].types[j].includes('postal_town')) {
+        locations.city = address_components[i].long_name;
+        console.log('!!!');
+        console.log(`adding postal_town: ${locations.city}`);
+        console.log('!!!');
+      }
+      if (address_components[i].types[j].includes('route')) {
+        locations.street = address_components[i].long_name;
+        console.log('!!!');
+        console.log(`adding a route: ${locations.street}`);
+        console.log('!!!');
+      }
+    }
   }
 
   return (locations);
