@@ -87,7 +87,7 @@ function updateHighscore(req, res, callback) {
     { new: true },
     (err, user) => {
       if (err) callback(cbs.cbMsg(true, err));
-      else if (!user) callback(cbs.cbMsg(true, 'No user by that Id found'));
+      else if (!user) callback(cbs.cbMsg(true, 'No user by that user_name found'));
       else callback(cbs.cbMsg(false, user));
     },
   );
@@ -189,10 +189,15 @@ function incLostBikeCounter(userId) {
   );
 }
 
-function updateProfilePic(userId, imageUrl, callback) {
+function updateProfilePic(userId, imageUrls, callback) {
   userModel.User.findOneAndUpdate(
     { _id: userId },
-    { avatar_url: imageUrl },
+    {
+      avatar_url: {
+        img: imageUrls.img,
+        thumbnail: imageUrls.thumbnail,
+      },
+    },
     { new: true, projection: { avatar_url: 1 } },
     (err, user) => {
       if (err) callback(cbs.cbMsg(true, err));

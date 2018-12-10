@@ -8,24 +8,22 @@ const imageminPngquant = require('imagemin-pngquant');
 const imageminMozjpeg = require('imagemin-mozjpeg');
 // const imageminOptipng = require('imagemin-optipng');
 
-// 0 (worst) - 100 (best)
-const jpegQuality = 70;
-
-// 0 (worst) - 100 (best)
-const pngQuality = '30-60';
+const cbs = require('./cbs');
 
 async function minimize(buffer, callback) {
   if (buffer !== undefined && buffer !== null) {
     // Compress image in request
     const miniImg = await imagemin.buffer(buffer, {
       plugins: [
-        imageminMozjpeg({ quality: jpegQuality }),
-        imageminPngquant({ quality: pngQuality }),
+        imageminMozjpeg({ quality: process.env.JPEG_QUALITY }),
+        imageminPngquant({ quality: process.env.PNG_QUALITY }),
       ],
+    }).catch((err) => {
+      callback(cbs.cbMsg(true, err));
     });
-    callback(miniImg);
+    callback(cbs.cbMsg(false, miniImg));
   } else {
-    callback(0);
+    callback(cbs.cbMsg(true, 'No image buffer to minimize'));
   }
 }
 
