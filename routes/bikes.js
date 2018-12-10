@@ -11,6 +11,9 @@ const router = express.Router();
 // As defined in the bike Schema.
 const STOLEN_FLAG = 'STOLEN';
 
+// Parse as decimal falg
+const DECIMAL_FLAG = 10;
+
 router.get('/', (req, res) => {
   res.send('handle db tasks');
 });
@@ -62,8 +65,8 @@ router.post('/addbike/', (req, res) => {
                       imgName: urlResult.message.img,
                       thumbnail: {
                         name: urlResult.message.thumbnail,
-                        width: parseInt(process.env.BIKE_THUMBNAIL_WIDTH, 10),
-                        height: parseInt(process.env.BIKE_THUMBNAIL_HEIGHT, 10),
+                        width: parseInt(process.env.BIKE_THUMBNAIL_WIDTH, DECIMAL_FLAG),
+                        height: parseInt(process.env.BIKE_THUMBNAIL_HEIGHT, DECIMAL_FLAG),
                       },
                     },
                     (uploadResult) => {
