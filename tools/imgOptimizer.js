@@ -10,19 +10,13 @@ const imageminMozjpeg = require('imagemin-mozjpeg');
 
 const cbs = require('./cbs');
 
-// 0 (worst) - 100 (best)
-const jpegQuality = 70;
-
-// 0 (worst) - 100 (best)
-const pngQuality = '30-60';
-
 async function minimize(buffer, callback) {
   if (buffer !== undefined && buffer !== null) {
     // Compress image in request
     const miniImg = await imagemin.buffer(buffer, {
       plugins: [
-        imageminMozjpeg({ quality: jpegQuality }),
-        imageminPngquant({ quality: pngQuality }),
+        imageminMozjpeg({ quality: process.env.JPEG_QUALITY }),
+        imageminPngquant({ quality: process.env.PNG_QUALITY }),
       ],
     }).catch((err) => {
       callback(cbs.cbMsg(true, err));

@@ -62,8 +62,8 @@ router.post('/addbike/', (req, res) => {
                       imgName: urlResult.message.img,
                       thumbnail: {
                         name: urlResult.message.thumbnail,
-                        width: parseInt(process.env.bikeThumbnailWidth, 10),
-                        height: parseInt(process.env.bikeThumbnailHeight, 10),
+                        width: parseInt(process.env.BIKE_THUMBNAIL_WIDTH, 10),
+                        height: parseInt(process.env.BIKE_THUMBNAIL_HEIGHT, 10),
                       },
                     },
                     (uploadResult) => {

@@ -70,8 +70,8 @@ router.post('/updateprofilepic/', (req, res) => {
                       imgName: urlResult.message.img,
                       thumbnail: {
                         name: urlResult.message.thumbnail,
-                        width: parseInt(process.env.userThumbnailWidth, 10),
-                        height: parseInt(process.env.userThumbnailHeight, 10),
+                        width: parseInt(process.env.USER_THUMBNAIL_WIDTH, 10),
+                        height: parseInt(process.env.USER_THUMBNAIL_HEIGHT, 10),
                       },
                     },
                     (uploadResult) => {

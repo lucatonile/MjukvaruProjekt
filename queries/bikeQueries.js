@@ -240,6 +240,14 @@ function addComment(req, callback) {
     // If comment is a reply to another comment, set the id of comment it replies to.
     if (req.body.replyCommentId) comment.isReplyToCommentId = req.body.replyCommentId;
 
+    // If lat and long is provided, validate and add it to the comment location.
+    if (reverseGeolocation.validateCoordinates(req.body.lat, req.body.long) === 'success') {
+      comment.location = {
+        lat: req.body.lat,
+        long: req.body.long,
+      };
+    }
+
     bikeModel.Bike.findOneAndUpdate({ _id: req.body.bikeId }, { $push: { comments: comment } },
       { upsert: false, new: true }, (err, result) => {
         if (err) callback(cbs.cbMsg(true, err));

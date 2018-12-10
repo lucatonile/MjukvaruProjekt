@@ -87,7 +87,7 @@ function updateHighscore(req, res, callback) {
     { new: true },
     (err, user) => {
       if (err) callback(cbs.cbMsg(true, err));
-      else if (!user) callback(cbs.cbMsg(true, 'No user by that Id found'));
+      else if (!user) callback(cbs.cbMsg(true, 'No user by that user_name found'));
       else callback(cbs.cbMsg(false, user));
     },
   );
