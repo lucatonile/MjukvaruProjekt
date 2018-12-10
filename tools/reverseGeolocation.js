@@ -46,7 +46,7 @@ function getLocation(lat, long) {
   const unParsedResult = httpGet(url);
   const result = JSON.parse(unParsedResult);
 
-  const address_components = result.results[0].address_components;
+  const addressComponents = result.results[0].address_components;
 
   const locations = {
     city: '',
@@ -54,24 +54,24 @@ function getLocation(lat, long) {
     street: '',
   };
 
-  for (let i = 0; i < address_components.length; i += 1) {
-    for (let j = 0; j < address_components[i].types.length; j += 1) {
-      console.log(address_components[i].types[j]);
-      console.log(address_components[i]);
-      if (address_components[i].types[j].includes('sublocality')) {
-        locations.neighborhood = address_components[i].long_name;
+  for (let i = 0; i < addressComponents.length; i += 1) {
+    for (let j = 0; j < addressComponents[i].types.length; j += 1) {
+      console.log(addressComponents[i].types[j]);
+      console.log(addressComponents[i]);
+      if (addressComponents[i].types[j].includes('sublocality')) {
+        locations.neighborhood = addressComponents[i].long_name;
         console.log('!!!');
         console.log(`adding a sublocality: ${locations.neighborhood}`);
         console.log('!!!');
       }
-      if (address_components[i].types[j].includes('postal_town')) {
-        locations.city = address_components[i].long_name;
+      if (addressComponents[i].types[j].includes('postal_town')) {
+        locations.city = addressComponents[i].long_name;
         console.log('!!!');
         console.log(`adding postal_town: ${locations.city}`);
         console.log('!!!');
       }
-      if (address_components[i].types[j].includes('route')) {
-        locations.street = address_components[i].long_name;
+      if (addressComponents[i].types[j].includes('route')) {
+        locations.street = addressComponents[i].long_name;
         console.log('!!!');
         console.log(`adding a route: ${locations.street}`);
         console.log('!!!');
