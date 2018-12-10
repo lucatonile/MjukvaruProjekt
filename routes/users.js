@@ -46,25 +46,41 @@ router.post('/setuserlocation/', (req, res) => {
 
 router.post('/updateprofilepic/', (req, res) => {
   if (req.files !== undefined && req.files !== null) {
-    gcs.uploadImage({ req, thumbnail: { width: 250, height: 250 } }, (result) => {
-      if (result.error) res.send(result);
+    gcs.generateUrlIds((urlResult) => {
+      if (urlResult.error) res.send(urlResult);
       else {
-        const imageUrl = process.env.GCS_URL + result.message.img;
-        const thumbnailUrl = process.env.GCS_URL + result.message.thumbnail;
+        const imageUrl = process.env.GCS_URL + urlResult.message.img;
+        const thumbnailUrl = process.env.GCS_URL + urlResult.message.thumbnail;
 
         queries.updateProfilePic(req.body.userId, { img: imageUrl, thumbnail: thumbnailUrl },
-          (result_) => {
+          (updateResult) => {
             // Done uploading profile pic, send response
-            res.send(result_);
+            res.send(updateResult);
 
-            // Behind the hood, optimize image and replace old image with optimized
-            imgOptimizer.minimize(req.files.image.data, (result__) => {
-              if (result__.error) console.log(result__.message);
-              else {
-                req.files.image.data = result__.message;
-                gcs.uploadImage({ req, name: result.message.img }, () => {});
-              }
-            });
+            // Behind the hood, optimize image, create thumbnail and upload to GCS
+            if (!updateResult.error) {
+              imgOptimizer.minimize(req.files.image.data, (minResult) => {
+                if (minResult.error) {
+                  // handle minResult error
+                } else {
+                  req.files.image.data = minResult.message;
+                  gcs.uploadImage(
+                    {
+                      req,
+                      imgName: urlResult.message.img,
+                      thumbnail: {
+                        name: urlResult.message.thumbnail,
+                        width: parseInt(process.env.userThumbnailWidth, 10),
+                        height: parseInt(process.env.userThumbnailHeight, 10),
+                      },
+                    },
+                    (uploadResult) => {
+                      // handle uploadResult error
+                    },
+                  );
+                }
+              });
+            }
           });
       }
     });

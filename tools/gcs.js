@@ -12,12 +12,18 @@ const storage = new Storage({
 
 const bucketName = process.env.GCS_PROJECTID;
 
-// args = {req: http request(json), name: explicit filename (optional), thumbnail: {width, height }}
+/*
+  args = {
+    req: http request(json),
+    imgName: explicit filename of img (optional)
+    thumbnail: {name, width, height } (optional)
+  }
+*/
 function uploadImage(args, callback) {
   if (args.req === undefined) callback(cbs.cbMsg(true, 'no request object found'));
 
   let filename = uuidv1();
-  if (args.name !== undefined) filename = args.name;
+  if (args.imgName !== undefined) filename = args.imgName;
 
   const file = storage.bucket(bucketName).file(filename);
 
@@ -43,14 +49,14 @@ function uploadImage(args, callback) {
           .resize(args.thumbnail.width, args.thumbnail.height)
           .toBuffer()
           .then((thumbnailData) => {
-            const thumbnailFile = storage.bucket(bucketName).file(`${filename}_t`);
+            const thumbnailFile = storage.bucket(bucketName).file(args.thumbnail.name);
 
             thumbnailFile.save((thumbnailData), {
               public: true,
               metadata,
             }, (err__) => {
               if (err__) callback(cbs.cbMsg(true, err__));
-              else callback(cbs.cbMsg(false, { img: filename, thumbnail: `${filename}_t` }));
+              else callback(cbs.cbMsg(false, { img: filename, thumbnail: `${args.thumbnail.name}` }));
             });
           })
           .catch((err_) => {
@@ -61,6 +67,30 @@ function uploadImage(args, callback) {
   }
 }
 
+// Generates image and thumbnail ID and uploads dummy data to GCS
+function generateUrlIds(callback) {
+  const img = uuidv1();
+  const thumbnail = `${img}_t`;
+
+  const file = storage.bucket(bucketName).file(img);
+  const thumbnailFile = storage.bucket(bucketName).file(thumbnail);
+
+  file.save('', {
+    public: true,
+    // metadata: ?
+  }, (err) => {
+    if (err) callback(cbs.cbMsg(true, err));
+    else {
+      thumbnailFile.save('', {
+        public: true,
+      }, (err_) => {
+        if (err_) callback(cbs.cbMsg(true, err_));
+        else callback(cbs.cbMsg(false, { img, thumbnail }));
+      });
+    }
+  });
+}
 module.exports = {
   uploadImage,
+  generateUrlIds,
 };
