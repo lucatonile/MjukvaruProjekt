@@ -11,7 +11,10 @@ function addBike(req, res, callback) {
   // Model requires submitter Id
   const bikeData = req.body;
   bikeData.submitter = req.body.userId;
-
+  bikeData.image_url = {
+    img: req.body.image_url,
+    thumbnail: req.body.thumbnail_url,
+  };
   const locations = reverseGeolocation.getLocation(req.body.lat, req.body.long);
 
   if (locations.error !== undefined) {

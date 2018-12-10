@@ -52,8 +52,14 @@ const bikeSchema = new mongoose.Schema({
     street: String,
   },
   image_url: {
-    type: String,
-    trim: true,
+    img: {
+      type: String,
+      trim: true,
+    },
+    thumbnail: {
+      type: String,
+      trim: true,
+    },
   },
   keywords: {
     frame_type: {

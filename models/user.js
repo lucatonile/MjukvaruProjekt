@@ -56,8 +56,14 @@ const userSchema = new mongoose.Schema({
     trim: true,
   },
   avatar_url: {
-    type: String,
-    trim: true,
+    img: {
+      type: String,
+      trim: true,
+    },
+    thumbnail: {
+      type: String,
+      trim: true,
+    },
   },
 });
 
