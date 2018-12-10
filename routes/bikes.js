@@ -68,6 +68,7 @@ router.post('/addbike/', (req, res) => {
                     },
                     (uploadResult) => {
                       // handle uploadResult error
+                      console.log(uploadResult);
                     },
                   );
                 }
