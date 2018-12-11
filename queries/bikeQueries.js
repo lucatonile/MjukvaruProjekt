@@ -3,11 +3,21 @@
 const bikeModel = require('../models/bike');
 const cbs = require('../tools/cbs');
 const reverseGeolocation = require('../tools/reverseGeolocation');
+const gcs = require('../tools/gcs');
+const imgOptimizerMinimize = require('../tools/imgOptimizer').minimize;
+const incLostBikesCounter = require('../queries/userQueries').incLostBikeCounter;
 
 // Limit for getMatchingBikes results shown
 const matchLimit = 5;
 
-function addBike(req, res, callback) {
+// Flag for marking a bike as stolen or found for the database
+const STOLEN_FLAG = 'STOLEN';
+const FOUND_FLAG = 'FOUND';
+
+// Flag for choosing decimal representation
+const DECIMAL_FLAG = 10;
+
+function saveBikeToDB(req, res, callback) {
   // Model requires submitter Id
   const bikeData = req.body;
   bikeData.submitter = req.body.userId;
@@ -45,8 +55,72 @@ function addBike(req, res, callback) {
   }
 }
 
+function addBike(req, res) {
+  let { body } = req;
+  const { userId } = req.body;
+
+  if (body.json !== undefined) {
+    body = JSON.parse(body.json);
+    req.body = body;
+    req.body.userId = userId;
+  }
+
+  if (req.files !== undefined && req.files !== null) {
+    gcs.generateUrlIds((urlResult) => {
+      if (urlResult.error) res.send(urlResult);
+      else {
+        req.body.image_url = process.env.GCS_URL + urlResult.message.img;
+        req.body.thumbnail_url = process.env.GCS_URL + urlResult.message.thumbnail;
+
+        saveBikeToDB(req, res,
+          (addResult) => {
+            if (req.body.type === STOLEN_FLAG) incLostBikesCounter(req.body.userId);
+            // Done uploading bike pic, send response
+            res.send(addResult);
+
+            // Behind the hood, optimize image, create thumbnail and upload to GCS
+            if (!addResult.error) {
+              imgOptimizerMinimize(req.files.image.data, (minResult) => {
+                if (minResult.error) {
+                  // handle minResult error
+                } else {
+                  req.files.image.data = minResult.message;
+                  gcs.uploadImage(
+                    {
+                      req,
+                      imgName: urlResult.message.img,
+                      thumbnail: {
+                        name: urlResult.message.thumbnail,
+                        width: parseInt(process.env.BIKE_THUMBNAIL_WIDTH, DECIMAL_FLAG),
+                        height: parseInt(process.env.BIKE_THUMBNAIL_HEIGHT, DECIMAL_FLAG),
+                      },
+                    },
+                    (uploadResult) => {
+                      // handle uploadResult error
+                      console.log(uploadResult);
+                    },
+                  );
+                }
+              });
+            }
+          });
+      }
+    });
+  } else {
+    saveBikeToDB(req, res, (result) => {
+      if (result.error) {
+        res.send(result.message);
+      } else {
+        if (req.body.type === STOLEN_FLAG) incLostBikesCounter(req.body.userId);
+        res.send(result.message);
+      }
+    });
+  }
+}
+
 function updateBike(req, callback) {
-  if (req.body.type !== undefined && (req.body.type !== 'FOUND' && req.body.type !== 'STOLEN')) {
+  if (req.body.type !== undefined
+    && (req.body.type !== FOUND_FLAG && req.body.type !== STOLEN_FLAG)) {
     callback(cbs.cbMsg(true, 'type must be specified as either STOLEN or FOUND'));
   } else {
     bikeModel.Bike.findOneAndUpdate({ _id: req.body.id }, req.body, { new: true }, (err, bike) => {
@@ -101,14 +175,14 @@ function getMyBikes(req, res, callback) {
 }
 
 function getStolenBikes(data, callback) {
-  bikeModel.Bike.find({ type: 'STOLEN', active: true }, (err, bikes) => {
+  bikeModel.Bike.find({ type: STOLEN_FLAG, active: true }, (err, bikes) => {
     if (err) callback(cbs.cbMsg(true, err));
     else callback(cbs.cbMsg(false, bikes));
   });
 }
 
 function getFoundBikes(data, callback) {
-  bikeModel.Bike.find({ type: 'FOUND', active: true },
+  bikeModel.Bike.find({ type: FOUND_FLAG, active: true },
     (err, bikes) => {
       if (err) callback(cbs.cbMsg(true, err));
       else callback(cbs.cbMsg(false, bikes));
@@ -117,9 +191,9 @@ function getFoundBikes(data, callback) {
 
 function getMatchingBikes(data, callback) {
   let type_ = '';
-  if (data.type === 'FOUND') type_ = 'STOLEN';
-  else if (data.type === 'STOLEN') type_ = 'FOUND';
-  else callback(cbs.cbMsg(true, 'bike must be specified as either STOLEN or FOUND'));
+  if (data.type === FOUND_FLAG) type_ = STOLEN_FLAG;
+  else if (data.type === STOLEN_FLAG) type_ = FOUND_FLAG;
+  else callback(cbs.cbMsg(true, `bike must be specified as either ${STOLEN_FLAG} or ${FOUND_FLAG}`));
 
   bikeModel.Bike.aggregate([
     {
