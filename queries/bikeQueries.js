@@ -55,7 +55,7 @@ function saveBikeToDB(req, res, callback) {
   }
 }
 
-function addBike(req, res) {
+function addBike(req, res, callback) {
   let { body } = req;
   const { userId } = req.body;
 
@@ -66,53 +66,59 @@ function addBike(req, res) {
   }
 
   if (req.files !== undefined && req.files !== null) {
-    gcs.generateUrlIds((urlResult) => {
-      if (urlResult.error) res.send(urlResult);
-      else {
-        req.body.image_url = process.env.GCS_URL + urlResult.message.img;
-        req.body.thumbnail_url = process.env.GCS_URL + urlResult.message.thumbnail;
+    if (req.files.image.mimetype.split('/')[0] !== 'image') {
+      callback(cbs.cbMsg(true, 'File must be an image!'));
+    } else {
+      gcs.generateUrlIds((urlResult) => {
+        if (urlResult.error) callback(urlResult);
+        else {
+          req.body.image_url = process.env.GCS_URL + urlResult.message.img;
+          req.body.thumbnail_url = process.env.GCS_URL + urlResult.message.thumbnail;
 
-        saveBikeToDB(req, res,
-          (addResult) => {
-            if (req.body.type === STOLEN_FLAG) incLostBikesCounter(req.body.userId);
-            // Done uploading bike pic, send response
-            res.send(addResult);
+          saveBikeToDB(req, res,
+            (addResult) => {
+              if (addResult.error) callback(addResult);
+              else {
+                if (req.body.type === STOLEN_FLAG) incLostBikesCounter(req.body.userId);
+                // Done uploading bike pic, send response
+                callback(addResult);
 
-            // Behind the hood, optimize image, create thumbnail and upload to GCS
-            if (!addResult.error) {
-              imgOptimizerMinimize(req.files.image.data, (minResult) => {
-                if (minResult.error) {
-                  // handle minResult error
-                } else {
-                  req.files.image.data = minResult.message;
-                  gcs.uploadImage(
-                    {
-                      req,
-                      imgName: urlResult.message.img,
-                      thumbnail: {
-                        name: urlResult.message.thumbnail,
-                        width: parseInt(process.env.BIKE_THUMBNAIL_WIDTH, DECIMAL_FLAG),
-                        height: parseInt(process.env.BIKE_THUMBNAIL_HEIGHT, DECIMAL_FLAG),
+                // Behind the hood, optimize image, create thumbnail and upload to GCS
+                imgOptimizerMinimize(req.files.image.data, (minResult) => {
+                  if (minResult.error) {
+                    // handle minResult error
+                    console.log(minResult);
+                  } else {
+                    req.files.image.data = minResult.message;
+                    gcs.uploadImage(
+                      {
+                        req,
+                        imgName: urlResult.message.img,
+                        thumbnail: {
+                          name: urlResult.message.thumbnail,
+                          width: parseInt(process.env.BIKE_THUMBNAIL_WIDTH, DECIMAL_FLAG),
+                          height: parseInt(process.env.BIKE_THUMBNAIL_HEIGHT, DECIMAL_FLAG),
+                        },
                       },
-                    },
-                    (uploadResult) => {
-                      // handle uploadResult error
-                      console.log(uploadResult);
-                    },
-                  );
-                }
-              });
-            }
-          });
-      }
-    });
+                      (uploadResult) => {
+                        // handle uploadResult error
+                        console.log(uploadResult);
+                      },
+                    );
+                  }
+                });
+              }
+            });
+        }
+      });
+    }
   } else {
     saveBikeToDB(req, res, (result) => {
       if (result.error) {
-        res.send(result.message);
+        callback(result);
       } else {
         if (req.body.type === STOLEN_FLAG) incLostBikesCounter(req.body.userId);
-        res.send(result.message);
+        callback(result);
       }
     });
   }

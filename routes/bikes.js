@@ -21,7 +21,7 @@ router.post('/preaddbike/', (req, res) => {
 });
 
 router.post('/addbike/', (req, res) => {
-  queries.addBike(req, res, (result) => { res.send(result.messagE); });
+  queries.addBike(req, res, (result) => { res.send(result.message); });
 });
 
 router.post('/removebike/', (req, res) => {
