@@ -36,7 +36,11 @@ function authenticate(req, res, next) {
       } else if (!req.body.password) {
         next({ error: 'Provided a password!' });
       } else if (bcrypt.compareSync(req.body.password, userInfo.password)) {
-        const token = jwt.sign({ id: userInfo.id }, req.app.get('secretKey'), { expiresIn: expireTime });
+        const token = jwt.sign(
+          { id: userInfo.id },
+          process.env.SECRET_KEY,
+          { expiresIn: expireTime },
+        );
 
         // Return user but without password field.
         const userInfoNoPassword = userInfo;
@@ -53,7 +57,7 @@ function authenticate(req, res, next) {
 // Checks if the provided token is valid.
 // If it is correct the user Id is added to the parameter body.
 function validateUser(req, res, next) {
-  jwt.verify(req.headers['x-access-token'], req.app.get('secretKey'), (err, decoded) => {
+  jwt.verify(req.headers['x-access-token'], process.env.SECRET_KEY, (err, decoded) => {
     if (err) {
       res.json({ status: 'error', message: err.message, data: null });
     } else {
