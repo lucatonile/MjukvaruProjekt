@@ -221,11 +221,12 @@ function updateProfilePic(req, res, callback) {
 
           saveProfilePicToDB(req.body.userId, { img: imageUrl, thumbnail: thumbnailUrl },
             (updateResult) => {
-              // Done uploading profile pic, send response
-              callback(updateResult);
+              if (updateResult.error) callback(updateResult);
+              else {
+                // Done uploading profile pic, send response
+                callback(updateResult);
 
-              // Behind the hood, optimize image, create thumbnail and upload to GCS
-              if (!updateResult.error) {
+                // Behind the hood, optimize image, create thumbnail and upload to GCS
                 imgOptimizerMinimize(req.files.image.data, (minResult) => {
                   if (minResult.error) {
                     // handle minResult error
@@ -244,7 +245,7 @@ function updateProfilePic(req, res, callback) {
                       },
                       (uploadResult) => {
                         // handle uploadResult error
-                        console.log(uploadResult);
+                        if (uploadResult.error) console.log(uploadResult);
                       },
                     );
                   }

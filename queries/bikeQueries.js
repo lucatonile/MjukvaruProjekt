@@ -102,7 +102,7 @@ function addBike(req, res, callback) {
                       },
                       (uploadResult) => {
                         // handle uploadResult error
-                        console.log(uploadResult);
+                        if (uploadResult.error) console.log(uploadResult);
                       },
                     );
                   }
