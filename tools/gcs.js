@@ -47,11 +47,14 @@ function uploadImage(args, callback) {
         // If thumbnail is to be generated, resize input imgbuffer and upload to GCS as well
         sharp(args.req.files.image.data)
           .resize(args.thumbnail.width, args.thumbnail.height)
-          .toBuffer()
-          .then((thumbnailData) => {
+          .toBuffer({ resolveWithObject: true })
+          .then(({ data, info }) => {
             const thumbnailFile = storage.bucket(bucketName).file(args.thumbnail.name);
 
-            thumbnailFile.save((thumbnailData), {
+            // update mimetype to the one generated from sharp
+            metadata.contentType = `image/${info.format}`;
+
+            thumbnailFile.save((data), {
               public: true,
               metadata,
             }, (err__) => {
