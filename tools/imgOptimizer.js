@@ -15,7 +15,7 @@ async function minimize(buffer, callback) {
     // Compress image in request
     const miniImg = await imagemin.buffer(buffer, {
       plugins: [
-        imageminMozjpeg({ quality: process.env.JPEG_QUALITY }),
+        imageminMozjpeg({ quality: process.env.JPEG_QUALITY, progressive: true }),
         imageminPngquant({ quality: process.env.PNG_QUALITY }),
       ],
     }).catch((err) => {
