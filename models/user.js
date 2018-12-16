@@ -65,6 +65,10 @@ const userSchema = new mongoose.Schema({
       trim: true,
     },
   },
+  has_notification: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 userSchema.plugin(uniqueValidator);
