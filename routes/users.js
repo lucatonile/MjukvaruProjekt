@@ -44,7 +44,7 @@ router.post('/resetpassword/', (req, res) => {
 });
 
 router.get('/userhasnotifications/', (req, res) => {
-  queries.getUser(req, res, (result) => { res.send(result); });
+  queries.getUser(req, res, (result) => { res.send(result.message.has_notification); });
 });
 
 module.exports = router;
