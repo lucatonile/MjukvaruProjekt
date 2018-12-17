@@ -18,7 +18,7 @@ def collection():
         except:
             return str({
                 "bikefound": False,
-                "rack": "",
+                "rack": "knas",
                 "basket": "",
                 "frame": "",
                 "color": "",
@@ -33,4 +33,3 @@ if __name__ == '__main__':
     #print ('lol')
     app.debug = True
     app.run()
-    print('ADRIAAAN')
