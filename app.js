@@ -5,7 +5,7 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const bodyParser = require('body-parser');
 const fileUpload = require('express-fileupload');
-const { PythonShell } = require('python-shell');
+const shell = require('shelljs');
 
 const authRouter = require('./routes/auth');
 const indexRouter = require('./routes/index');
@@ -25,8 +25,6 @@ const pyOptions = {
   scriptPath: 'bfr',
 };
 
-//const pyShell = new PythonShell('bfr.py', pyOptions);
-
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
@@ -41,8 +39,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 
 app.use('/payload', (req, res, next) => {
-  console.log(req);
-  res.send('payxDD');
+  shell.exec('bash reloadnode', function(code, stdout, stderr) {
+    console.log('Exit code:', code);
+    console.log('Program output:', stdout);
+    console.log('Program stderr:', stderr);
+    console.log("WEBHOOK TEST!!!")
+  });
 })
 
 const auth = require('./queries/authQueries');
