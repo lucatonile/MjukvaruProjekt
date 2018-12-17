@@ -40,6 +40,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 
+app.use('/payload', (req, res, next) => {
+  console.log(req);
+  res.send('payxDD');
+})
+
 const auth = require('./queries/authQueries');
 
 // Public routes
@@ -75,19 +80,7 @@ app.use(bodyParser.urlencoded({ // to support URL-encoded bodies
   extended: true,
 }));
 
-<<<<<<< HEAD
 // TODO Should this be an environmental variable?
 app.set('secretKey', 'nodeRestApi');
 
-// pyShell.on('message', (message) => {
-//   // received a message sent from the Python script (a simple "print" statement)
-//   console.log(message);
-// });
-
-// pyShell.on('stderr', (stderr) => {
-//   console.log(stderr);
-// });
-
-=======
->>>>>>> origin/server
 module.exports = app;
