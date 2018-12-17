@@ -1,6 +1,9 @@
 # MjukvaruProjekt
-To run server with debug:
+To run server with debug (development):
 SET DEBUG=server:* & npm run devstart
+
+To run server in production on server computer:
+sudo pm2 start bin/www 
 
 For neural network microservice (.bfr/):
 Create a python virtual environment in .bfr/, enter it and run 'pip install -r requirements.txt'.
