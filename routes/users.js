@@ -43,7 +43,7 @@ router.post('/resetpassword/', (req, res) => {
   queries.resetPassword(req, res, (result) => { res.send(result); });
 });
 
-router.get('/userhasnotifications/', (req, res) => {
+router.post('/userhasnotifications/', (req, res) => {
   queries.getUser(req, res, (result) => {
     res.send({ error: result.error, message: result.message.has_notification });
   });
