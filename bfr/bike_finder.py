@@ -41,7 +41,7 @@ def extract(pic):
         #print("Found to many or to few bikes on image")
         #print("Bikes found: " + str(len(detections)))
         #send returnObject
-        return returnObject
+        return json.dumps(returnObject)
 
     #Resize and reshape bike image
     
@@ -62,30 +62,30 @@ def extract(pic):
     with graph.as_default():
         rack = RACKDETECTION_MODEL.predict(img_data_list)
     if rack[0][1] > 0.5:
-        returnObject["rack"] = "yes"
+        returnObject["rack"] = True
         #print("yes rack")
     else: 
-        returnObject["rack"] = "no"
+        returnObject["rack"] = False
         #print("No rack")
     
     #basket
     with graph.as_default():
         basket = BASKETDETECTION_MODEL.predict(img_data_list)
     if rack[0][1] > 0.5:
-        returnObject["basket"] = "yes"
+        returnObject["basket"] = True
         #print("yes basket")
     else: 
-        returnObject["basket"] = "no"
+        returnObject["basket"] = False
         #print("No basket")
     
     #lamp
     with graph.as_default():
         light = LAMPDETECTION_MODEL.predict(img_data_list)
     if rack[0][1] > 0.5:
-        returnObject["light"] = "yes"
+        returnObject["light"] = True
         #print("yes light")
     else: 
-        returnObject["light"] = "no"
+        returnObject["light"] = False
         #print("No light")
     
     #frame
@@ -139,7 +139,7 @@ def extract(pic):
     if color[0][8] > 0.5:
         returnObject["color"] = "yellow"
 
-    return returnObject
+    return json.dumps(returnObject)
 
 def init():
     print("Loading models...")

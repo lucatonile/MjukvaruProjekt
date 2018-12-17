@@ -43,7 +43,6 @@ app.use('/payload', (req, res, next) => {
     console.log('Exit code:', code);
     console.log('Program output:', stdout);
     console.log('Program stderr:', stderr);
-    console.log("WEBHOOK TEST!!!")
   });
 })
 
