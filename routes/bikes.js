@@ -2,19 +2,14 @@
 const express = require('express');
 const request = require('request');
 const queries = require('../queries/bikeQueries');
-const incLostBikesCounter = require('../queries/userQueries').incLostBikeCounter;
-const gcs = require('../tools/gcs');
-const imgOptimizer = require('../tools/imgOptimizer');
 
 const router = express.Router();
-
-// As defined in the bike Schema.
-const STOLEN_FLAG = 'STOLEN';
 
 router.get('/', (req, res) => {
   res.send('handle db tasks');
 });
 
+// adds dummy data
 router.post('/preaddbike/', (req, res) => {
   if (req.files !== undefined && req.files !== null) {
     request.post('http://localhost:5000/api/labels', {
@@ -88,7 +83,6 @@ router.post('/updatebike/', (req, res) => {
 // Returns bikes having the features specified in the request parameters.
 router.post('/filterbikes/', (req, res) => { queries.filterBikes(req, res, (result) => { res.send(result.message); }); });
 
-// TODO: only showing results above a certain threshold of similarity to uploaded bike
 router.post('/getmatchingbikes/', (req, res) => {
   queries.getMatchingBikes(req.body, (result) => {
     if (result.error) res.send(result.message);

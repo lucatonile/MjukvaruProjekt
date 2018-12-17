@@ -2,9 +2,12 @@
 /* eslint no-underscore-dangle: 0 */
 const bcrypt = require('bcryptjs');
 const nodeMailer = require('nodemailer');
+const pako = require('pako');
 const userModel = require('../models/user');
 const cbs = require('../tools/cbs');
+const gcs = require('../tools/gcs');
 const strings = require('../tools/strings');
+const imgOptimizerMinimize = require('../tools/imgOptimizer').minimize;
 
 const DECIMAL_FLAG = 10;
 const DESCENDING_FLAG = -1;
@@ -189,7 +192,7 @@ function incLostBikeCounter(userId) {
   );
 }
 
-function updateProfilePic(userId, imageUrls, callback) {
+function saveProfilePicToDB(userId, imageUrls, callback) {
   userModel.User.findOneAndUpdate(
     { _id: userId },
     {
@@ -204,6 +207,67 @@ function updateProfilePic(userId, imageUrls, callback) {
       else callback(cbs.cbMsg(false, user));
     },
   );
+}
+
+function updateProfilePic(req, res, callback) {
+  if (req.files !== undefined && req.files !== null) {
+    if (req.files.image.mimetype.split('/')[0] !== 'image') {
+      callback(cbs.cbMsg(true, 'File must be an image!'));
+    } else {
+      try {
+        req.files.image.data = pako.deflate(req.files.image.data);
+        console.log(req.files.image.data.byteLength);
+        req.files.image.data = Buffer.from(pako.inflate(req.files.image.data));
+        console.log(req.files.image.data.byteLength);
+        console.log("PAKO!!!")
+      } catch (err) {
+        console.log(err);
+      }
+      gcs.generateUrlIds((urlResult) => {
+        if (urlResult.error) callback(urlResult);
+        else {
+          const imageUrl = process.env.GCS_URL + urlResult.message.img;
+          const thumbnailUrl = process.env.GCS_URL + urlResult.message.thumbnail;
+
+          saveProfilePicToDB(req.body.userId, { img: imageUrl, thumbnail: thumbnailUrl },
+            (updateResult) => {
+              if (updateResult.error) callback(updateResult);
+              else {
+                // Done uploading profile pic, send response
+                callback(updateResult);
+
+                // Behind the hood, optimize image, create thumbnail and upload to GCS
+                imgOptimizerMinimize(req.files.image.data, (minResult) => {
+                  if (minResult.error) {
+                    // handle minResult error
+                    console.log(minResult);
+                  } else {
+                    req.files.image.data = minResult.message;
+                    gcs.uploadImage(
+                      {
+                        req,
+                        imgName: urlResult.message.img,
+                        thumbnail: {
+                          name: urlResult.message.thumbnail,
+                          width: parseInt(process.env.USER_THUMBNAIL_WIDTH, 10),
+                          height: parseInt(process.env.USER_THUMBNAIL_HEIGHT, 10),
+                        },
+                      },
+                      (uploadResult) => {
+                        // handle uploadResult error
+                        if (uploadResult.error) console.log(uploadResult);
+                      },
+                    );
+                  }
+                });
+              }
+            });
+        }
+      });
+    }
+  } else {
+    res.send(cbs.cbMsg(true, 'No image found!'));
+  }
 }
 
 function resetPassword(req, res, callback) {
