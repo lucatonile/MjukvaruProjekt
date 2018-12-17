@@ -4,7 +4,6 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const bodyParser = require('body-parser');
-require('./db.js');
 const fileUpload = require('express-fileupload');
 const { PythonShell } = require('python-shell');
 
@@ -13,10 +12,12 @@ const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const bikesRouter = require('./routes/bikes');
 
+require('./db.js');
+
 const app = express();
 
 const bfrScript = path.join(__dirname, 'bfr', 'bfr.py');
-const pyEnv = path.join(__dirname, 'bfr', 'env', 'Scripts', 'python');
+const pyEnv = path.join(__dirname, 'bfr', 'env', 'bin', 'python');
 
 const pyOptions = {
   pythonPath: pyEnv,
@@ -24,7 +25,7 @@ const pyOptions = {
   scriptPath: 'bfr',
 };
 
-const pyShell = new PythonShell('bfr.py', pyOptions);
+//const pyShell = new PythonShell('bfr.py', pyOptions);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -48,6 +49,11 @@ app.use('/auth', authRouter);
 app.use('/users', auth.validateUser, usersRouter);
 app.use('/bikes', auth.validateUser, bikesRouter);
 
+// Test routes
+const testRouter = require('./routes/test');
+
+app.use('/test', testRouter);
+
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
   next(createError(404));
@@ -57,14 +63,14 @@ app.use((req, res, next) => {
 app.use((err, req, res) => {
   // set locals, only providing error in development
   res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+  res.locals.error = process.env.NODE_ENV === 'development' ? err : {};
 
   // render the error page
   res.status(err.status || 500);
   res.render('error');
 });
 
-app.use(bodyParser.json()); // to support JSON-encoded bodies
+app.use(bodyParser.json()); // to sup  JSON-encoded bodies
 app.use(bodyParser.urlencoded({ // to support URL-encoded bodies
   extended: true,
 }));
@@ -72,13 +78,13 @@ app.use(bodyParser.urlencoded({ // to support URL-encoded bodies
 // TODO Should this be an environmental variable?
 app.set('secretKey', 'nodeRestApi');
 
-pyShell.on('message', (message) => {
-  // received a message sent from the Python script (a simple "print" statement)
-  console.log(message);
-});
+// pyShell.on('message', (message) => {
+//   // received a message sent from the Python script (a simple "print" statement)
+//   console.log(message);
+// });
 
-pyShell.on('stderr', (stderr) => {
-  console.log(stderr);
-});
+// pyShell.on('stderr', (stderr) => {
+//   console.log(stderr);
+// });
 
 module.exports = app;

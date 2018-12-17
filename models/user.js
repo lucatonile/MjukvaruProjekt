@@ -34,12 +34,36 @@ const userSchema = new mongoose.Schema({
   },
   phone_number: Number,
   game_score: {
-    type: Number,
-    default: 0,
+    bike_score: {
+      type: Number,
+      default: 0,
+    },
+    bikes_lost: {
+      type: Number,
+      default: 0,
+    },
+    thumb_score: {
+      type: Number,
+      default: 0,
+    },
+    total_score: {
+      type: Number,
+      default: 0,
+    },
   },
   location: {
     type: String,
     trim: true,
+  },
+  avatar_url: {
+    img: {
+      type: String,
+      trim: true,
+    },
+    thumbnail: {
+      type: String,
+      trim: true,
+    },
   },
 });
 
@@ -49,30 +73,6 @@ userSchema.plugin(uniqueValidator);
 // hashing a password before saving it to the database
 userSchema.pre('save', function encrypt(next) {
   const user = this;
-  bcrypt.genSalt(saltRounds, (err, salt) => {
-    if (err) return next(err);
-
-    bcrypt.hash(user.password, salt, (err1, hash) => {
-      if (err1) return next(err1);
-
-      user.password = hash;
-      next();
-    });
-  });
-
-  // eslint-disable-next-line consistent-return
-  bcrypt.hash(user.password, saltRounds, (err, hash) => {
-    if (err) return next(err);
-    user.password = hash;
-    next();
-  });
-});
-
-userSchema.pre('update', function encrypt(next) {
-  const user = this;
-
-  if (!user.isModified('password')) return next();
-
   bcrypt.genSalt(saltRounds, (err, salt) => {
     if (err) return next(err);
 

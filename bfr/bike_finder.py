@@ -36,10 +36,10 @@ def extract(pic):
 
     if len(detections) != 0:
         returnObject["bikefound"] = True  
-        print("Found bike")
+        #print("Found bike")
     else:
-        print("Found to many or to few bikes on image")
-        print("Bikes found: " + str(len(detections)))
+        #print("Found to many or to few bikes on image")
+        #print("Bikes found: " + str(len(detections)))
         #send returnObject
         return returnObject
 
@@ -63,30 +63,30 @@ def extract(pic):
         rack = RACKDETECTION_MODEL.predict(img_data_list)
     if rack[0][1] > 0.5:
         returnObject["rack"] = "yes"
-        print("yes rack")
+        #print("yes rack")
     else: 
         returnObject["rack"] = "no"
-        print("No rack")
+        #print("No rack")
     
     #basket
     with graph.as_default():
         basket = BASKETDETECTION_MODEL.predict(img_data_list)
     if rack[0][1] > 0.5:
         returnObject["basket"] = "yes"
-        print("yes basket")
+        #print("yes basket")
     else: 
         returnObject["basket"] = "no"
-        print("No basket")
+        #print("No basket")
     
     #lamp
     with graph.as_default():
-        lamp = LAMPDETECTION_MODEL.predict(img_data_list)
+        light = LAMPDETECTION_MODEL.predict(img_data_list)
     if rack[0][1] > 0.5:
-        returnObject["lamp"] = "yes"
-        print("yes lamp")
+        returnObject["light"] = "yes"
+        #print("yes light")
     else: 
-        returnObject["lamp"] = "no"
-        print("No lamp")
+        returnObject["light"] = "no"
+        #print("No light")
     
     #frame
     with graph.as_default():
@@ -145,7 +145,7 @@ def init():
     print("Loading models...")
     global RACKDETECTION_MODEL, LAMPDETECTION_MODEL, BASKETDETECTION_MODEL, FRAMEDETECTION_MODEL, COLORSDETECTION_MODEL, graph, detector, custom
     # TODO: MODELS_PATH is an environment variable
-    MODELS_PATH = 'C:/Users/lucasle/Desktop/MP/LHFork_2/MjukvaruProjekt/bfr/models/'
+    MODELS_PATH = '/home/bikeini/Server/MjukvaruProjekt/bfr/models/'
     #models/
     PATH_BIKEDETECTION_MODEL = MODELS_PATH + 'resnet50_coco_best_v2.0.1.h5'
     PATH_RACKDETECTION_MODEL = MODELS_PATH + 'rack/Adam_10_epochs_4layers.h5' #Adam_10_epochs_4layers.h5

@@ -1,23 +1,34 @@
 // eslint-disable-next-line prefer-destructuring
 const XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 
+// Validate that lat, long coordinates are valid.
+//  lat is -90 < lat < 90 and long is -180 < long < 180.
+function validateCoordinates(lat, long) {
+  const latInt = parseInt(lat, 10);
+  const longInt = parseInt(long, 10);
+  if (latInt < -90 || latInt > 90 || Number.isNaN(latInt)) {
+    return { error: 'Lat out of bounds or not a number' };
+  }
+  if (longInt < -180 || longInt > 180 || Number.isNaN(longInt)) {
+    return { error: 'Long out of bounds or not a number' };
+  }
+  return 'success';
+}
+
 // Call this function with lat, long. Returns the name of the nearest neighborhood
 function getLocation(lat, long) {
   // Cant geolocate undefined coordaintes.
   if (lat === undefined || long === undefined) {
     return { error: 'Lat or long undefined or wrong type' };
   }
+  if (!process.env.GOOGLE_API_KEY) {
+    return { error: 'Local env variable Google API Key not set' };
+  }
 
   // Parse POST request lat/long as ints to validate their value.
-  //  lat is -90 < lat < 90 and long is -180 < long < 180.
-  const latAsInt = parseInt(lat, 10);
-  const longAsInt = parseInt(long, 10);
-  if (latAsInt < -90 || latAsInt > 90 || Number.isNaN(latAsInt)) {
-    return { error: 'Lat out of bounds or not a number' };
-  }
-  if (longAsInt < -180 || longAsInt > 180 || Number.isNaN(longAsInt)) {
-    return { error: 'Long out of bounds or not a number' };
-  }
+  const status = validateCoordinates(lat, long);
+  // If return not true, an err msg will be returned from the func call.
+  if (status !== 'success') return status;
 
   // Lat and long values are validated. Set up the Google Geolocation API call.
   const host = 'https://maps.googleapis.com';
@@ -52,4 +63,5 @@ function getLocation(lat, long) {
 
 module.exports = {
   getLocation,
+  validateCoordinates,
 };

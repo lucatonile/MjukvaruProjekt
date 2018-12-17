@@ -52,8 +52,14 @@ const bikeSchema = new mongoose.Schema({
     street: String,
   },
   image_url: {
-    type: String,
-    trim: true,
+    img: {
+      type: String,
+      trim: true,
+    },
+    thumbnail: {
+      type: String,
+      trim: true,
+    },
   },
   keywords: {
     frame_type: {
@@ -77,6 +83,13 @@ const bikeSchema = new mongoose.Schema({
       ref: 'User',
       required: true,
     },
+    isReplyToCommentId: {
+      type: mongoose.Schema.Types.ObjectId,
+    },
+    location: {
+      lat: Number,
+      long: Number,
+    },
     body: {
       type: String,
       required: true,
@@ -86,7 +99,28 @@ const bikeSchema = new mongoose.Schema({
       type: Date,
       default: Date.now,
     },
+    rating: {
+      up: [{
+        userId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User',
+          required: true,
+        },
+      }],
+      down: [{
+        userId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User',
+          required: true,
+        },
+      }],
+    },
   }],
+});
+
+// Always attach `populate()` to `find()` calls
+bikeSchema.pre('find', function populateSubmitter() {
+  this.populate('submitter comments.author');
 });
 
 const bikeModel = mongoose.model('Bike', bikeSchema, 'bikes');

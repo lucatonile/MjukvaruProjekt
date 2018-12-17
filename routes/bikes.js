@@ -2,9 +2,14 @@
 const express = require('express');
 const request = require('request');
 const queries = require('../queries/bikeQueries');
+const incLostBikesCounter = require('../queries/userQueries').incLostBikeCounter;
 const gcs = require('../tools/gcs');
+const imgOptimizer = require('../tools/imgOptimizer');
 
 const router = express.Router();
+
+// As defined in the bike Schema.
+const STOLEN_FLAG = 'STOLEN';
 
 router.get('/', (req, res) => {
   res.send('handle db tasks');
@@ -31,49 +36,7 @@ router.post('/preaddbike/', (req, res) => {
 });
 
 router.post('/addbike/', (req, res) => {
-  const data = req.body;
-  if (req.files !== undefined && req.files !== null) {
-    gcs.uploadImage(req, (result) => {
-      if (result.error) res.send(result.message);
-      else {
-        data.image_url = process.env.GCS_URL + result.message;
-
-        queries.addBike(req, res, (result_) => {
-          if (result_.error) res.send(result_.message);
-          else res.send(result_.message);
-        });
-      }
-    });
-  } else {
-    queries.addBike(req, res, (result) => {
-      if (result.error) res.send(result.message);
-      else res.send(result.message);
-    });
-  }
-});
-
-router.post('/addbike2/', (req, res) => {
-  const data = JSON.parse(req.body.json);
-  data.userId = req.body.userId;
-
-  if (req.files !== undefined && req.files !== null) {
-    gcs.uploadImage(req, (result) => {
-      if (result.error) res.send(result.message);
-      else {
-        data.image_url = process.env.GCS_URL + result.message;
-
-        queries.addBike2(data, (result_) => {
-          if (result_.error) res.send(result_.message);
-          else res.send(result_.message);
-        });
-      }
-    });
-  } else {
-    queries.addBike2(data, (result) => {
-      if (result.error) res.send(result.message);
-      else res.send(result.message);
-    });
-  }
+  queries.addBike(req, res, (result) => { res.send(result.message); });
 });
 
 router.post('/removebike/', (req, res) => {
@@ -101,34 +64,6 @@ router.get('/getmybikes/', (req, res) => {
   });
 });
 
-router.post('/addcomment/', (req, res) => {
-  queries.addComment(req, (result) => {
-    if (result.error) res.send(result.message);
-    else res.send(result.message);
-  });
-});
-
-router.post('/removecomment/', (req, res) => {
-  queries.removeComment(req, (result) => {
-    if (result.error) res.send(result.message);
-    else res.send(result.message);
-  });
-});
-
-router.post('/editcomment/', (req, res) => {
-  queries.editComment(req, (result) => {
-    if (result.error) res.send(result.message);
-    else res.send(result.message);
-  });
-});
-
-router.post('/getcomments/', (req, res) => {
-  queries.getComments(req, (result) => {
-    if (result.error) res.send(result.message);
-    else res.send(result.message);
-  });
-});
-
 router.get('/getstolenbikes/', (req, res) => {
   queries.getStolenBikes(res, (result) => {
     if (result.error) res.send(result.message);
@@ -150,18 +85,60 @@ router.post('/updatebike/', (req, res) => {
   });
 });
 
+// Returns bikes having the features specified in the request parameters.
+router.post('/filterbikes/', (req, res) => { queries.filterBikes(req, res, (result) => { res.send(result.message); }); });
+
 // TODO: only showing results above a certain threshold of similarity to uploaded bike
 router.post('/getmatchingbikes/', (req, res) => {
   queries.getMatchingBikes(req.body, (result) => {
     if (result.error) res.send(result.message);
-    const ids = [];
-    for (let i = 0; i < result.message.length; i += 1) {
-      ids.push(result.message[i]._id);
+    else {
+      const ids = [];
+      for (let i = 0; i < result.message.length; i += 1) { ids.push(result.message[i]._id); }
+      queries.getBikesWithIdsOrdered(ids, (result_) => {
+        if (result_.error) res.send(result_.error);
+        else res.send(result_.message);
+      });
     }
-    queries.getBikesWithIdsOrdered(ids, (result_) => {
-      if (result_.error) res.send(result_.error);
-      else res.send(result_.message);
-    });
+  });
+});
+
+/*
+  Comment section
+  TODO break out into separate file.
+*/
+
+router.post('/addcomment/', (req, res) => {
+  queries.addComment(req, (result) => {
+    if (result.error) res.send(result.message);
+    else res.send(result.message);
+  });
+});
+
+router.post('/removecomment/', (req, res) => {
+  queries.removeComment(req, (result) => {
+    if (result.error) res.send(result.message);
+    else res.send(result.message);
+  });
+});
+
+router.post('/ratecomment/', (req, res) => {
+  queries.rateComment(req, res, (result) => {
+    res.send(result.message);
+  });
+});
+
+router.post('/editcomment/', (req, res) => {
+  queries.editComment(req, (result) => {
+    if (result.error) res.send(result.message);
+    else res.send(result.message);
+  });
+});
+
+router.post('/getcomments/', (req, res) => {
+  queries.getComments(req, (result) => {
+    if (result.error) res.send(result.message);
+    else res.send(result.message);
   });
 });
 

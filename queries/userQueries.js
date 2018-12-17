@@ -1,7 +1,13 @@
 /* eslint-disable array-callback-return */
+/* eslint no-underscore-dangle: 0 */
 const bcrypt = require('bcryptjs');
+const nodeMailer = require('nodemailer');
 const userModel = require('../models/user');
 const cbs = require('../tools/cbs');
+const strings = require('../tools/strings');
+
+const DECIMAL_FLAG = 10;
+const DESCENDING_FLAG = -1;
 
 // Returns the user document from the DB with the corresponding email provided in the body.
 function getUserInfoEmail(req, res, callback) {
@@ -42,11 +48,49 @@ function getAllUsers(req, res, callback) {
 
 // Returns highscore of users sorted by their descending score.
 // POST parameter 'limit' sets the number of users returned.
+// Parameters location sets the geographical scope of the search.
 function getHighscore(req, res, callback) {
-  userModel.User.find((err, users) => {
-    if (err) callback(cbs.cbMsg(true, err));
-    callback(cbs.cbMsg(false, users));
-  }).sort({ game_score: -1 }).limit(parseInt(req.body.limit, 10));
+  if (req.body.location) {
+    userModel.User.find({ location: req.body.location }, (err, users) => {
+      if (err) callback(cbs.cbMsg(true, err));
+      else callback(cbs.cbMsg(false, users));
+    }).sort({ 'game_score.total_score': DESCENDING_FLAG }).limit(parseInt(req.body.limit, DECIMAL_FLAG));
+  } else {
+    userModel.User.find((err, users) => {
+      if (err) callback(cbs.cbMsg(true, err));
+      else callback(cbs.cbMsg(false, users));
+    }).sort({ 'game_score.total_score': DESCENDING_FLAG }).limit(parseInt(req.body.limit, DECIMAL_FLAG));
+  }
+}
+
+// Increments thumb, bike and total score if they are provided.
+function updateHighscore(req, res, callback) {
+  let bikeScore = 0;
+  let thumbScore = 0;
+  let totalScore = 0;
+
+  if (req.body.thumb_score !== undefined) thumbScore = JSON.parse(req.body.thumb_score);
+  if (req.body.bike_score !== undefined) bikeScore = JSON.parse(req.body.bike_score);
+
+  // if bike or thumb score arent provided they are 0 and doesn't change totalScore (that start=0)
+  totalScore += (bikeScore + thumbScore);
+
+  userModel.User.findOneAndUpdate(
+    { username: req.body.user_name },
+    {
+      $inc: {
+        'game_score.thumb_score': thumbScore,
+        'game_score.bike_score': bikeScore,
+        'game_score.total_score': totalScore,
+      },
+    },
+    { new: true },
+    (err, user) => {
+      if (err) callback(cbs.cbMsg(true, err));
+      else if (!user) callback(cbs.cbMsg(true, 'No user by that user_name found'));
+      else callback(cbs.cbMsg(false, user));
+    },
+  );
 }
 
 // Deletes the user associated with the provided email field of the body.
@@ -71,7 +115,9 @@ function updateUser(req, res, callback) {
   };
 
   const update = req.body;
+  // eslint-disable-next-line no-underscore-dangle
   delete update._id;
+  delete update.email_username;
 
   // Only call hash function if a password was actually provided in the request.
   if (req.body.password !== undefined) {
@@ -131,13 +177,93 @@ function getUserInfo(req, res, callback) {
   });
 }
 
+function incLostBikeCounter(userId) {
+  userModel.User.findOneAndUpdate(
+    { _id: userId },
+    { $inc: { 'game_score.bikes_lost': 1 } },
+    { new: true },
+    (err, user) => {
+      if (err) return err;
+      return user;
+    },
+  );
+}
+
+function updateProfilePic(userId, imageUrls, callback) {
+  userModel.User.findOneAndUpdate(
+    { _id: userId },
+    {
+      avatar_url: {
+        img: imageUrls.img,
+        thumbnail: imageUrls.thumbnail,
+      },
+    },
+    { new: true, projection: { avatar_url: 1 } },
+    (err, user) => {
+      if (err) callback(cbs.cbMsg(true, err));
+      else callback(cbs.cbMsg(false, user));
+    },
+  );
+}
+
+function resetPassword(req, res, callback) {
+  const pw = strings.shuffleString('abcduvxyzABCDRSTUVXYZ!#/()_,.:<>?@*^12345678910');
+  req.body.password = pw;
+
+  // Verify username/mail
+  userModel.User.findOne(
+    {
+      $or: [{ username: req.body.email_username }, { email: req.body.email_username }],
+    },
+    (err, user) => {
+      if (err) res.send(err);
+      else if (user === null) callback(cbs.cbMsg(true, 'Username/Email not found'));
+      else {
+        req.body.userId = String(user._id);
+
+        // Update user password to the new one and send it to their mail
+        updateUser(req, res, (result) => {
+          const { email } = result.message;
+
+          const transporter = nodeMailer.createTransport({
+            service: 'gmail',
+            auth: {
+              user: process.env.EMAIL_ADDRESS,
+              pass: process.env.EMAIL_PASSWORD,
+            },
+          });
+
+          const emailMessage = {
+            from: process.env.EMAIL_ADDRESS,
+            to: email,
+            subject: 'New Password',
+            text: `Your new password is: ${pw}`,
+          };
+
+          transporter.sendMail(emailMessage, (error) => {
+            if (error) {
+              callback(cbs.cbMsg(true, `Something went wrong sending your new password to ${email}`));
+            } else {
+              callback(cbs.cbMsg(false, `An email containing your new password was sent to ${email}`));
+            }
+          });
+        });
+      }
+    },
+  );
+}
+
 module.exports = {
   getUserInfoEmail,
   getHighscore,
+  updateHighscore,
   removeUser,
   updateUser,
   getUser,
   getAllUsers,
   setUserLocation,
   getUserInfo,
+  incLostBikeCounter,
+  updateProfilePic,
+  resetPassword,
 };
