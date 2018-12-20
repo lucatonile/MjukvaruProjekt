@@ -7,10 +7,11 @@ const ratingSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
-    unique: true,
   },
   commentId: {
     type: mongoose.Schema.Types.ObjectId,
+    ref: 'Comment',
+    required: true,
   },
   direction: {
     type: String,
@@ -22,6 +23,10 @@ const ratingSchema = new mongoose.Schema({
 ratingSchema.pre('find', function populateSubmitter() {
   this.populate('userId commentId');
 });
+
+// A user can only rate each comment once.
+// Hence the combination of user and comment id is required to be unique.
+ratingSchema.index({ userId: 1, commentId: 1 }, { unique: true });
 
 const ratingModel = mongoose.model('Rating', ratingSchema, 'ratings');
 

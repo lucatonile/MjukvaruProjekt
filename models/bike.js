@@ -77,45 +77,10 @@ const bikeSchema = new mongoose.Schema({
     winter_tires: Boolean,
     light: Boolean,
   },
-  comments: [{
-    author: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-    },
-    isReplyToCommentId: {
-      type: mongoose.Schema.Types.ObjectId,
-    },
-    location: {
-      lat: Number,
-      long: Number,
-    },
-    body: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    date: {
-      type: Date,
-      default: Date.now,
-    },
-    rating: {
-      up: [{
-        userId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'User',
-          required: true,
-        },
-      }],
-      down: [{
-        userId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'User',
-          required: true,
-        },
-      }],
-    },
-  }],
+  commentCount: {
+    type: Number,
+    default: 0,
+  },
 });
 
 // Always attach `populate()` to `find()` calls
