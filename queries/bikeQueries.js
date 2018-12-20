@@ -7,9 +7,6 @@ const gcs = require('../tools/gcs');
 const imgOptimizerMinimize = require('../tools/imgOptimizer').minimize;
 const incLostBikesCounter = require('../queries/userQueries').incLostBikeCounter;
 
-// Limit for getMatchingBikes results shown
-const matchLimit = 5;
-
 // Flag for marking a bike as stolen or found for the database
 const STOLEN_FLAG = 'STOLEN';
 const FOUND_FLAG = 'FOUND';
@@ -207,6 +204,7 @@ function getMatchingBikes(data, callback) {
         $and: [
           {
             type: type_,
+            active: true,
           },
           {
             $or: [
@@ -270,12 +268,9 @@ function getMatchingBikes(data, callback) {
       $match: {
         score: {
           // score = number_of_keyword_matches
-          $gte: parseInt(process.env.MINIMUM_BIKEMATCH_SCORE, 10),
+          $gte: parseInt(1, 10),
         },
       },
-    },
-    {
-      $limit: matchLimit,
     },
   ], (err, bikes) => {
     if (err) callback(cbs.cbMsg(true, err));

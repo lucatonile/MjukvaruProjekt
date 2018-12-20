@@ -69,6 +69,10 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  isDeleted: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 userSchema.plugin(uniqueValidator);

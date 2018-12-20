@@ -1,0 +1,10 @@
+#!/bin/sh
+
+CHANGED=`git diff HEAD@{1} --stat -- $GIT_DIR./package.json | wc -l`
+if [ $CHANGED -gt 0 ];
+then
+    npm install
+    echo "package.json has changed!"
+fi
+
+pm2 reload 0

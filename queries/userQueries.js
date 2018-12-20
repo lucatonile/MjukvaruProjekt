@@ -2,6 +2,7 @@
 /* eslint no-underscore-dangle: 0 */
 const bcrypt = require('bcryptjs');
 const nodeMailer = require('nodemailer');
+const crypto = require('crypto');
 const userModel = require('../models/user');
 const cbs = require('../tools/cbs');
 const gcs = require('../tools/gcs');
@@ -52,7 +53,6 @@ function getAllUsers(req, res, callback) {
 // POST parameter 'limit' sets the number of users returned.
 // Parameters location sets the geographical scope of the search.
 function getHighscore(req, res, callback) {
-  console.log(req.body.location)
   if (req.body.location) {
     userModel.User.find({ location: req.body.location }, (err, users) => {
       if (err) callback(cbs.cbMsg(true, err));
@@ -118,20 +118,21 @@ function wipeUser(req, res, callback) {
   } else if (req.body.email === '') {
     callback(cbs.cbMsg(true, { error: 'Empty email provided!' }));
   } else {
+    // Generate random string to append to the deleted username and email as they have to be unique.
+    const randomString = crypto.randomBytes(20).toString('hex');
     const update = {
-      username: 'deleted user',
-      email: '0@0',
+      username: `deleted user_${randomString}`,
+      email: `0@0_${randomString}`,
       phone_number: '0',
       location: 'deleted location',
       avatar_url: 'deleted avatar',
+      isDeleted: true,
     };
     userModel.User.findOneAndUpdate(
       { email: req.body.email },
       update,
       { new: true },
       (err, result) => {
-        console.log(err);
-        console.log(result);
         if (err) callback(cbs.cbMsg(true, { error: err }));
         else if (!result) callback(cbs.cbMsg(true, { error: `No user with email ${req.body.email} found!` }));
         else callback(cbs.cbMsg(false, result));
@@ -291,7 +292,7 @@ function updateProfilePic(req, res, callback) {
 }
 
 function resetPassword(req, res, callback) {
-  const pw = strings.shuffleString('abcduvxyzABCDRSTUVXYZ!#/()_,.:<>?@*^12345678910');
+  const pw = strings.shuffleString('abzXYZ!(_.1337');
   req.body.password = pw;
 
   // Verify username/mail
