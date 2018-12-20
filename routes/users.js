@@ -3,7 +3,7 @@ const queries = require('../queries/userQueries');
 
 const router = express.Router();
 
-router.get('/getuser/', (req, res) => {
+router.post('/getuser/', (req, res) => {
   queries.getUser(req, res, (result) => { res.send(result.message); });
 });
 
