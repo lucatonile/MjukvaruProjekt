@@ -134,8 +134,6 @@ function wipeUser(req, res, callback) {
       update,
       { new: true },
       (err, result) => {
-        console.log(err);
-        console.log(result);
         if (err) callback(cbs.cbMsg(true, { error: err }));
         else if (!result) callback(cbs.cbMsg(true, { error: `No user with email ${req.body.email} found!` }));
         else callback(cbs.cbMsg(false, result));
@@ -252,7 +250,6 @@ function updateProfilePic(req, res, callback) {
         console.log(req.files.image.data.byteLength);
         req.files.image.data = Buffer.from(pako.inflate(req.files.image.data));
         console.log(req.files.image.data.byteLength);
-        console.log('PAKO!!!');
       } catch (err) {
         console.log(err);
       }
