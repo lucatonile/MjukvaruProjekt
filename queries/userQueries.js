@@ -2,7 +2,6 @@
 /* eslint no-underscore-dangle: 0 */
 const bcrypt = require('bcryptjs');
 const nodeMailer = require('nodemailer');
-const pako = require('pako');
 const crypto = require('crypto');
 const userModel = require('../models/user');
 const cbs = require('../tools/cbs');
@@ -245,14 +244,6 @@ function updateProfilePic(req, res, callback) {
     if (req.files.image.mimetype.split('/')[0] !== 'image') {
       callback(cbs.cbMsg(true, 'File must be an image!'));
     } else {
-      try {
-        req.files.image.data = pako.deflate(req.files.image.data);
-        console.log(req.files.image.data.byteLength);
-        req.files.image.data = Buffer.from(pako.inflate(req.files.image.data));
-        console.log(req.files.image.data.byteLength);
-      } catch (err) {
-        console.log(err);
-      }
       gcs.generateUrlIds((urlResult) => {
         if (urlResult.error) callback(urlResult);
         else {
