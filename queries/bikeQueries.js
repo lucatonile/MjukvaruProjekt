@@ -268,7 +268,7 @@ function getMatchingBikes(data, callback) {
       $match: {
         score: {
           // score = number_of_keyword_matches
-          $gte: parseInt(1, 10),
+          $gte: parseInt(process.env.MINIMUM_BIKEMATCH_SCORE, 10),
         },
       },
     },
