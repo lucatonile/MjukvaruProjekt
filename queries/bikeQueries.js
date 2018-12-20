@@ -6,6 +6,7 @@ const reverseGeolocation = require('../tools/reverseGeolocation');
 const gcs = require('../tools/gcs');
 const imgOptimizerMinimize = require('../tools/imgOptimizer').minimize;
 const incLostBikesCounter = require('../queries/userQueries').incLostBikeCounter;
+const { updateUser } = require('../queries/userQueries');
 
 // Flag for marking a bike as stolen or found for the database
 const STOLEN_FLAG = 'STOLEN';
@@ -13,113 +14,6 @@ const FOUND_FLAG = 'FOUND';
 
 // Flag for choosing decimal representation
 const DECIMAL_FLAG = 10;
-
-function saveBikeToDB(req, res, callback) {
-  // Model requires submitter Id
-  const bikeData = req.body;
-  bikeData.submitter = req.body.userId;
-  bikeData.image_url = {
-    img: req.body.image_url,
-    thumbnail: req.body.thumbnail_url,
-  };
-  const locations = reverseGeolocation.getLocation(req.body.lat, req.body.long);
-
-  if (locations.error !== undefined) {
-    callback(cbs.cbMsg(true, locations.error));
-    res.status(400).send();
-  } else {
-    bikeData.location = {
-      lat: req.body.lat,
-      long: req.body.long,
-      city: locations.city,
-      neighborhood: locations.neighborhood,
-      street: locations.street,
-    };
-
-    const bike = new bikeModel.Bike(bikeData);
-
-    bike.save((err, result) => {
-      if (err) {
-        callback(cbs.cbMsg(true, err));
-      } else {
-        callback(cbs.cbMsg(false, {
-          message: 'Success in adding bike',
-          bikeId: result._id,
-          bike: result,
-        }));
-      }
-    });
-  }
-}
-
-function addBike(req, res, callback) {
-  let { body } = req;
-  const { userId } = req.body;
-
-  if (body.json !== undefined) {
-    body = JSON.parse(body.json);
-    req.body = body;
-    req.body.userId = userId;
-  }
-
-  if (req.files !== undefined && req.files !== null) {
-    if (req.files.image.mimetype.split('/')[0] !== 'image') {
-      callback(cbs.cbMsg(true, 'File must be an image!'));
-    } else {
-      gcs.generateUrlIds((urlResult) => {
-        if (urlResult.error) callback(urlResult);
-        else {
-          req.body.image_url = process.env.GCS_URL + urlResult.message.img;
-          req.body.thumbnail_url = process.env.GCS_URL + urlResult.message.thumbnail;
-
-          saveBikeToDB(req, res,
-            (addResult) => {
-              if (addResult.error) callback(addResult);
-              else {
-                if (req.body.type === STOLEN_FLAG) incLostBikesCounter(req.body.userId);
-                // Done uploading bike pic, send response
-                callback(addResult);
-
-                // Behind the hood, optimize image, create thumbnail and upload to GCS
-                imgOptimizerMinimize(req.files.image.data, (minResult) => {
-                  if (minResult.error) {
-                    // handle minResult error
-                    console.log(minResult);
-                  } else {
-                    req.files.image.data = minResult.message;
-                    gcs.uploadImage(
-                      {
-                        req,
-                        imgName: urlResult.message.img,
-                        thumbnail: {
-                          name: urlResult.message.thumbnail,
-                          width: parseInt(process.env.BIKE_THUMBNAIL_WIDTH, DECIMAL_FLAG),
-                          height: parseInt(process.env.BIKE_THUMBNAIL_HEIGHT, DECIMAL_FLAG),
-                        },
-                      },
-                      (uploadResult) => {
-                        // handle uploadResult error
-                        if (uploadResult.error) console.log(uploadResult);
-                      },
-                    );
-                  }
-                });
-              }
-            });
-        }
-      });
-    }
-  } else {
-    saveBikeToDB(req, res, (result) => {
-      if (result.error) {
-        callback(result);
-      } else {
-        if (req.body.type === STOLEN_FLAG) incLostBikesCounter(req.body.userId);
-        callback(result);
-      }
-    });
-  }
-}
 
 function updateBike(req, callback) {
   if (req.body.type !== undefined
@@ -244,8 +138,8 @@ function getMatchingBikes(data, callback) {
         wt_: { $cond: [{ $eq: ['$keywords.winter_tires', data['keywords.winter_tires'] === 'true'] }, 1, 0] },
         light_: { $cond: [{ $eq: ['$keywords.light', data['keywords.light'] === 'true'] }, 1, 0] },
         // frame/antitheft number give extra high score
-        fn_: { $cond: [{ $eq: ['$frame_number', data.frame_number] }, 10, 0] },
-        ac_: { $cond: [{ $eq: ['$antitheft_code', data.antitheft_code] }, 10, 0] },
+        fn_: { $cond: [{ $eq: ['$frame_number', data.frame_number] }, 100, 0] },
+        ac_: { $cond: [{ $eq: ['$antitheft_code', data.antitheft_code] }, 100, 0] },
       },
     },
     {
@@ -447,12 +341,152 @@ function getComments(req, callback) {
   }
 }
 
+function getBikeSubmitter(bikeId, callback) {
+  bikeModel.Bike.findOne({ _id: bikeId }, (err, result) => {
+    if (err || result === null) callback(0);
+    else callback(result.submitter);
+  });
+}
+
+// data = queries.bikeQueries.getMatchinbBikes() return
+function sendMatchNotifications(data) {
+  data.message.forEach((bike) => {
+    getBikeSubmitter(bike._id, (userId) => {
+      if (userId) {
+        const req = {
+          body: {
+            userId,
+            has_notification: true,
+          },
+        };
+        updateUser(req, null, (result) => {
+          console.log(result);
+        });
+      }
+    });
+  });
+}
+
+function saveBikeToDB(req, res, callback) {
+  // Model requires submitter Id
+  const bikeData = req.body;
+  bikeData.submitter = req.body.userId;
+  bikeData.image_url = {
+    img: req.body.image_url,
+    thumbnail: req.body.thumbnail_url,
+  };
+  const locations = reverseGeolocation.getLocation(req.body.lat, req.body.long);
+
+  if (locations.error !== undefined) {
+    callback(cbs.cbMsg(true, locations.error));
+    res.status(400).send();
+  } else {
+    bikeData.location = {
+      lat: req.body.lat,
+      long: req.body.long,
+      city: locations.city,
+      neighborhood: locations.neighborhood,
+      street: locations.street,
+    };
+
+    const bike = new bikeModel.Bike(bikeData);
+
+    bike.save((err, result) => {
+      // check all user notis
+      if (err) {
+        callback(cbs.cbMsg(true, err));
+      } else {
+        callback(cbs.cbMsg(false, {
+          message: 'Success in adding bike',
+          bikeId: result._id,
+          bike: result,
+        }));
+
+        getMatchingBikes(bikeData, (matchResult) => {
+          sendMatchNotifications(matchResult);
+        });
+      }
+    });
+  }
+}
+
+function addBike(req, res, callback) {
+  let { body } = req;
+  const { userId } = req.body;
+
+  if (body.json !== undefined) {
+    body = JSON.parse(body.json);
+    req.body = body;
+    req.body.userId = userId;
+  }
+
+  if (req.files !== undefined && req.files !== null) {
+    if (req.files.image.mimetype.split('/')[0] !== 'image') {
+      callback(cbs.cbMsg(true, 'File must be an image!'));
+    } else {
+      gcs.generateUrlIds((urlResult) => {
+        if (urlResult.error) callback(urlResult);
+        else {
+          req.body.image_url = process.env.GCS_URL + urlResult.message.img;
+          req.body.thumbnail_url = process.env.GCS_URL + urlResult.message.thumbnail;
+
+          saveBikeToDB(req, res,
+            (addResult) => {
+              if (addResult.error) callback(addResult);
+              else {
+                if (req.body.type === STOLEN_FLAG) incLostBikesCounter(req.body.userId);
+                // Done uploading bike pic, send response
+                callback(addResult);
+
+                // Behind the hood, optimize image, create thumbnail and upload to GCS
+                imgOptimizerMinimize(req.files.image.data, (minResult) => {
+                  if (minResult.error) {
+                    // handle minResult error
+                    console.log(minResult);
+                  } else {
+                    req.files.image.data = minResult.message;
+                    gcs.uploadImage(
+                      {
+                        req,
+                        imgName: urlResult.message.img,
+                        thumbnail: {
+                          name: urlResult.message.thumbnail,
+                          width: parseInt(process.env.BIKE_THUMBNAIL_WIDTH, DECIMAL_FLAG),
+                          height: parseInt(process.env.BIKE_THUMBNAIL_HEIGHT, DECIMAL_FLAG),
+                        },
+                      },
+                      (uploadResult) => {
+                        // handle uploadResult error
+                        if (uploadResult.error) console.log(uploadResult);
+                      },
+                    );
+                  }
+                });
+              }
+            });
+        }
+      });
+    }
+  } else {
+    saveBikeToDB(req, res, (result) => {
+      if (result.error) {
+        callback(result);
+      } else {
+        if (req.body.type === STOLEN_FLAG) incLostBikesCounter(req.body.userId);
+        callback(result);
+      }
+    });
+  }
+}
+
+
 module.exports = {
   addBike,
   removeBike,
   updateBike,
   getBike,
   getBikes,
+  getBikeSubmitter,
   getMyBikes,
   getBikesWithIdsOrdered,
   getStolenBikes,

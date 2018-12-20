@@ -73,6 +73,12 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  bikeMatches: [
+    {
+      bikeId: String,
+      new: Boolean,
+    },
+  ],
 });
 
 userSchema.plugin(uniqueValidator);
