@@ -39,13 +39,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 
 app.use('/payload', (req, res, next) => {
-  console.log(req);
-  
-  shell.exec('bash reloadnode', function(code, stdout, stderr) {
-    console.log('Exit code:', code);
-    console.log('Program output:', stdout);
-    console.log('Program stderr:', stderr);
-  });
+  if(req.body === 'refs/heads/server_ml') {
+    shell.exec('bash reload2', function(code, stdout, stderr) {
+      console.log('Exit code:', code);
+      console.log('Program output:', stdout);
+      console.log('Program stderr:', stderr);
+    });
+  }
 
   res.send({status: 'nice!'});
 })
