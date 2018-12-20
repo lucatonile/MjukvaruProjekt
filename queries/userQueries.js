@@ -111,6 +111,35 @@ function removeUser(req, res, callback) {
   }
 }
 
+// Replaces all user information with anonymous dummy data.
+function wipeUser(req, res, callback) {
+  if (req.body.email === undefined) {
+    callback(cbs.cbMsg(true, { error: 'Email not provided!' }));
+  } else if (req.body.email === '') {
+    callback(cbs.cbMsg(true, { error: 'Empty email provided!' }));
+  } else {
+    const update = {
+      username: 'deleted user',
+      email: '0@0',
+      phone_number: '0',
+      location: 'deleted location',
+      avatar_url: 'deleted avatar',
+    };
+    userModel.User.findOneAndUpdate(
+      { email: req.body.email },
+      update,
+      { new: true },
+      (err, result) => {
+        console.log(err);
+        console.log(result);
+        if (err) callback(cbs.cbMsg(true, { error: err }));
+        else if (!result) callback(cbs.cbMsg(true, { error: `No user with email ${req.body.email} found!` }));
+        else callback(cbs.cbMsg(false, result));
+      },
+    );
+  }
+}
+
 // General function for updating a user document with the provided paramters.
 function updateUser(req, res, callback) {
   const conditions = {
@@ -313,6 +342,7 @@ module.exports = {
   getHighscore,
   updateHighscore,
   removeUser,
+  wipeUser,
   updateUser,
   getUser,
   getAllUsers,
