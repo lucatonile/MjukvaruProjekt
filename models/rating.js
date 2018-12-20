@@ -20,7 +20,7 @@ const ratingSchema = new mongoose.Schema({
 
 // Always attach `populate()` to `find()` calls
 ratingSchema.pre('find', function populateSubmitter() {
-  this.populate('userId');
+  this.populate('userId commentId');
 });
 
 const ratingModel = mongoose.model('Rating', ratingSchema, 'ratings');
