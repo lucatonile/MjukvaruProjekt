@@ -125,8 +125,11 @@ function wipeUser(req, res, callback) {
       username: `deleted user_${randomString}`,
       email: `0@0_${randomString}`,
       phone_number: '0',
-      location: 'deleted location',
-      avatar_url: 'deleted avatar',
+      location: '',
+      avatar_url: {
+        img: '',
+        thumbnail: '',
+      },
       isDeleted: true,
     };
     userModel.User.findOneAndUpdate(
