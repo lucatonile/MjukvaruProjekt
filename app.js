@@ -39,7 +39,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 
 app.use('/payload', (req, res, next) => {
-  if(req.body === 'refs/heads/server_ml') {
+  if(1) {
     shell.exec('bash reload2', function(code, stdout, stderr) {
       console.log('Exit code:', code);
       console.log('Program output:', stdout);
