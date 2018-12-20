@@ -27,6 +27,10 @@ router.post('/removeuser/', (req, res) => {
   queries.removeUser(req, res, (result) => { res.send(result.message); });
 });
 
+router.post('/wipeuser/', (req, res) => {
+  queries.wipeUser(req, res, (result) => { res.send(result.message); });
+});
+
 router.post('/updateuser/', (req, res) => {
   queries.updateUser(req, res, (result) => { res.send(result.message); });
 });

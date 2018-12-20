@@ -2,7 +2,7 @@
 /* eslint no-underscore-dangle: 0 */
 const bcrypt = require('bcryptjs');
 const nodeMailer = require('nodemailer');
-const pako = require('pako');
+const crypto = require('crypto');
 const userModel = require('../models/user');
 const cbs = require('../tools/cbs');
 const gcs = require('../tools/gcs');
@@ -111,6 +111,39 @@ function removeUser(req, res, callback) {
   }
 }
 
+// Replaces all user information with anonymous dummy data.
+function wipeUser(req, res, callback) {
+  if (req.body.email === undefined) {
+    callback(cbs.cbMsg(true, { error: 'Email not provided!' }));
+  } else if (req.body.email === '') {
+    callback(cbs.cbMsg(true, { error: 'Empty email provided!' }));
+  } else {
+    // Generate random string to append to the deleted username and email as they have to be unique.
+    const randomString = crypto.randomBytes(20).toString('hex');
+    const update = {
+      username: `deleted user_${randomString}`,
+      email: `0@0_${randomString}`,
+      phone_number: '0',
+      location: '',
+      avatar_url: {
+        img: '',
+        thumbnail: '',
+      },
+      isDeleted: true,
+    };
+    userModel.User.findOneAndUpdate(
+      { email: req.body.email },
+      update,
+      { new: true },
+      (err, result) => {
+        if (err) callback(cbs.cbMsg(true, { error: err }));
+        else if (!result) callback(cbs.cbMsg(true, { error: `No user with email ${req.body.email} found!` }));
+        else callback(cbs.cbMsg(false, result));
+      },
+    );
+  }
+}
+
 // General function for updating a user document with the provided paramters.
 function updateUser(req, res, callback) {
   const conditions = {
@@ -214,15 +247,6 @@ function updateProfilePic(req, res, callback) {
     if (req.files.image.mimetype.split('/')[0] !== 'image') {
       callback(cbs.cbMsg(true, 'File must be an image!'));
     } else {
-      try {
-        req.files.image.data = pako.deflate(req.files.image.data);
-        console.log(req.files.image.data.byteLength);
-        req.files.image.data = Buffer.from(pako.inflate(req.files.image.data));
-        console.log(req.files.image.data.byteLength);
-        console.log("PAKO!!!")
-      } catch (err) {
-        console.log(err);
-      }
       gcs.generateUrlIds((urlResult) => {
         if (urlResult.error) callback(urlResult);
         else {
@@ -322,6 +346,7 @@ module.exports = {
   getHighscore,
   updateHighscore,
   removeUser,
+  wipeUser,
   updateUser,
   getUser,
   getAllUsers,
