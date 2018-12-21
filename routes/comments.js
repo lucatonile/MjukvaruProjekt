@@ -37,4 +37,8 @@ router.post('/getbikecomments/', (req, res) => {
   });
 });
 
+router.post('/getratings/', (req, res) => {
+  queries.getCommentRatings(req, (result) => { res.send(result.message); });
+});
+
 module.exports = router;

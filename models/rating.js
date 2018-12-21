@@ -26,7 +26,7 @@ ratingSchema.pre('find', function populateSubmitter() {
 
 // A user can only rate each comment once.
 // Hence the combination of user and comment id is required to be unique.
-ratingSchema.index({ userId: 1, commentId: 1 }, { unique: true });
+// ratingSchema.index({ userId: 1, commentId: 1 }, { unique: true });
 
 const ratingModel = mongoose.model('Rating', ratingSchema, 'ratings');
 

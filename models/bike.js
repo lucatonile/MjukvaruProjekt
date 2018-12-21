@@ -85,7 +85,7 @@ const bikeSchema = new mongoose.Schema({
 
 // Always attach `populate()` to `find()` calls
 bikeSchema.pre('find', function populateSubmitter() {
-  this.populate('submitter comments.author');
+  this.populate('submitter');
 });
 
 const bikeModel = mongoose.model('Bike', bikeSchema, 'bikes');

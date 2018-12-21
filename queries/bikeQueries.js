@@ -112,7 +112,7 @@ function addBike(req, res, callback) {
   } else {
     saveBikeToDB(req, res, (result) => {
       if (result.error) {
-        callback(result);
+        callback(result, { lel: 'top lel' });
       } else {
         if (req.body.type === STOLEN_FLAG) incLostBikesCounter(req.body.userId);
         callback(result);

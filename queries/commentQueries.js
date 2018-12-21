@@ -11,7 +11,7 @@ function addComment(req, callback) {
     callback(cbs.cbMsg(true, 'Empty bikeId provided!'));
   } else {
     const comment = {
-      author: req.body.userId,
+      userId: req.body.userId,
       bikeId: req.body.bikeId,
       body: req.body.body,
     };
@@ -30,7 +30,7 @@ function addComment(req, callback) {
     const commentRecord = new commentModel.Comment(comment);
     commentRecord.save((err, result) => {
       if (err) {
-        callback(cbs.cbMsg(true, { error: err }));
+        callback(cbs.cbMsg(true, { error: err, message: 'error in commentRecord save' }));
       } else if (!result) {
         callback(cbs.cbMsg(true, { error: 'no result from save' }));
       } else {
@@ -78,16 +78,14 @@ function getComments(req, callback) {
     callback(cbs.cbMsg(true, { error: 'Empty bikeId provided!' }));
   } else {
     console.log('searching');
-    const { bikeId } = req.body.bikeId;
     commentModel.Comment.find(
-      { bikeId },
+      { bikeId: req.body.bikeId },
       (error, result) => {
         console.log('handling result');
-        console.log(error);
         console.log(result);
         if (error) callback(cbs.cbMsg(true, { error, message: 'Error in comment find call' }));
-        else if (!result) callback(cbs.cbMsg(false, { message: `No results found for ${bikeId}` }));
-        else callback(false, { result, message: `The resulting comments for bike ${req.body.bikeId}` });
+        else if (!result) callback(cbs.cbMsg(false, { message: `No results found for ${req.body.bikeId}` }));
+        else console.log('lel'); callback(cbs.cbMsg(false, { result, message: `The resulting comments for bike ${req.body.bikeId}` }));
       },
     );
   }
@@ -97,7 +95,7 @@ function getCommentRatings(req, callback) {
   if (req.body.commentId === undefined || req.body.commentId === '') {
     callback(cbs.cbMsg(true, { error: 'commentId not provided' }));
   } else {
-    ratingModel.Model.find(
+    ratingModel.Rating.find(
       { commentId: req.body.commentId },
       (error, result) => {
         if (error) callback(cbs.cbMsg(true, { error }));
@@ -109,51 +107,59 @@ function getCommentRatings(req, callback) {
 }
 
 function rateCommentAux(req, res, cb) {
-  console.log('in rateCommentAux');
+  let newDirection = 'UP';
+  if (req.body.direction === 'UP') newDirection = 'DOWN';
   // Check if rating exists. If it does, remove it. If not, add it.
-  ratingModel.Rating.findOneAndDelete(
-    {
-      commentId: req.body.commentId,
-      userId: req.body.userId,
-    },
-    (searchError, searchResult) => {
-      console.log('search and deleting');
-      if (searchError) {
-        cb(cbs.cbMsg(true, { error: searchError, message: 'in search result with error' }));
-      } else if (!searchResult) {
-        const newRating = new ratingModel.Rating(
-          {
-            userId: req.body.userId,
-            commentId: req.body.commentId,
-            bikeId: req.body.bikeId,
-          },
-        );
-        newRating.save((error, result) => {
-          if (error) cb(cbs.cbMsg(true, { error }));
-          else if (!result) cb(cbs.cbMsg(true, { error: 'no result' }));
-          else cb(cbs.cbMsg(false, { result, message: 'a rating was added for this user/comment combo' }));
-        });
-      } else {
-        cb(cbs.cbMsg(false, { message: `Rating by user ${req.body.userId} removed from comment ${req.body.commentId}` }));
-      }
-    },
-  );
+  const query = {
+    commentId: req.body.commentId,
+    userId: req.body.userId,
+  };
+  const update = {
+    $set: { direction: newDirection },
+  };
+
+  ratingModel.Rating.findOneAndUpdate(query, update, { new: true }, (error, result) => {
+    console.log('findOneAndUpdate begin');
+    if (error) {
+      cb(cbs.cbMsg(error, { message: 'update error' }));
+    } else if (result) {
+      console.log(req.body.direction);
+      console.log(`result: ${result}`); cb(cbs.cbMsg(result));
+    } else {
+      console.log('adding new rating');
+      const newRating = new ratingModel.Rating(
+        {
+          userId: req.body.userId,
+          commentId: req.body.commentId,
+          direction: req.body.direction,
+        },
+      );
+      newRating.save((saveError, saveResult) => {
+        if (saveError) cb(cbs.cbMsg(true, { saveError, message: 'newRatign save error' }));
+        else if (saveResult) cb(cbs.cbMsg(false, { result: saveResult }));
+        else cb(cbs.cbMsg(true, { error: 'wtf happend? new Rating save gave undefined result' }));
+      });
+    }
+  });
 }
 
 // TODO: If an UP rating is called when a DOWN rating is in place they should be swapped
 // Instead of removed as the current implementation does.
+// Swap can be done by changing direction value!
 
 // Validate direction input and call auxillary function.
 function rateComment(req, res, callback) {
-  console.log('rating comment');
-  const validValues = ['UP', 'DOWN'];
-  if (req.body.value === undefined) {
-    res.status(500).send(cbs.cbMsg(true, { error: 'Value undefined' }));
-  } else if (validValues.includes(req.body.value)) {
-    console.log('calling rateCommentAux');
-    rateCommentAux(req, res, callback);
+  const validDirections = ['UP', 'DOWN'];
+  if (req.body.direction === undefined) {
+    res.status(500).send(cbs.cbMsg(true, { error: 'direction parameter undefined' }));
+  } else if (validDirections.includes(req.body.direction)) {
+    if (!req.body.userId || !req.body.commentId) {
+      res.status(500).send(cbs(cbs.cbMsg(true, { error: 'userId or commentId not defined' })));
+    } else {
+      rateCommentAux(req, res, callback);
+    }
   } else {
-    res.status(500).send(cbs.cbMsg(true, { error: `Invalid value: ${req.body.value}` }));
+    res.status(500).send(cbs.cbMsg(true, { error: `Invalid direction: ${req.body.direction}. Should be UP or DOWN.` }));
   }
 }
 
