@@ -119,14 +119,10 @@ function rateCommentAux(req, res, cb) {
   };
 
   ratingModel.Rating.findOneAndUpdate(query, update, { new: true }, (error, result) => {
-    console.log('findOneAndUpdate begin');
     if (error) {
       cb(cbs.cbMsg(error, { message: 'update error' }));
     } else if (result) {
-      console.log(req.body.direction);
-      console.log(`result: ${result}`); cb(cbs.cbMsg(result));
     } else {
-      console.log('adding new rating');
       const newRating = new ratingModel.Rating(
         {
           userId: req.body.userId,
