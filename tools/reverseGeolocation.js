@@ -56,25 +56,14 @@ function getLocation(lat, long) {
 
   for (let i = 0; i < addressComponents.length; i += 1) {
     for (let j = 0; j < addressComponents[i].types.length; j += 1) {
-      // console.log(addressComponents[i].types[j]);
-      // console.log(addressComponents[i]);
       if (addressComponents[i].types[j].includes('sublocality')) {
         locations.neighborhood = addressComponents[i].long_name;
-        // console.log('!!!');
-        // console.log(`adding a sublocality: ${locations.neighborhood}`);
-        // console.log('!!!');
       }
       if (addressComponents[i].types[j].includes('postal_town')) {
         locations.city = addressComponents[i].long_name;
-        // console.log('!!!');
-        // console.log(`adding postal_town: ${locations.city}`);
-        // console.log('!!!');
       }
       if (addressComponents[i].types[j].includes('route')) {
         locations.street = addressComponents[i].long_name;
-        // console.log('!!!');
-        // console.log(`adding a route: ${locations.street}`);
-        // console.log('!!!');
       }
     }
   }

@@ -264,7 +264,6 @@ function updateProfilePic(req, res, callback) {
                 imgOptimizerMinimize(req.files.image.data, (minResult) => {
                   if (minResult.error) {
                     // handle minResult error
-                    console.log(minResult);
                   } else {
                     req.files.image.data = minResult.message;
                     gcs.uploadImage(

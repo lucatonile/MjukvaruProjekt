@@ -2,6 +2,8 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const userModel = require('../models/user');
 const bikeModel = require('../models/bike');
+const ratingModel = require('../models/rating');
+const commentModel = require('../models/comment');
 
 const mongoDB = process.env.DATABASE_URL;
 
@@ -52,26 +54,6 @@ function generateBikeData(index) {
     antitheft_code: `TestAntitheft code ${index}`,
     description: `TestDescription string ${index}`,
     image_url: 'http://storage.googleapis.com/bikeini/9b041e90-f17b-11e8-bcca-3b559bc5e5ff',
-    comments: [
-      {
-        rating: {
-          up: index,
-          down: index + 1,
-        },
-        date: '2018-12-04T13:05:16.866Z',
-        author: '5c067b7e9ef5cd6aa37c7165',
-        body: `En rolig kommentar ${index}, 1`,
-      },
-      {
-        rating: {
-          up: (index + 1) * 2,
-          down: (index + 1) * 3,
-        },
-        date: '2018-12-04T13:05:16.866Z',
-        author: '5c067b7e9ef5cd6aa37c7165',
-        body: `En rolig kommentar ${index}, 2`,
-      },
-    ],
   };
 }
 
@@ -117,7 +99,7 @@ function insertBikeData(num) {
   }
 }
 
-function clearBikeData(req, res, callback) {
+function clearBikes(req, res, callback) {
   bikeModel.Bike.remove({},
     (err, removed) => {
       if (err) callback(err);
@@ -125,7 +107,7 @@ function clearBikeData(req, res, callback) {
     });
 }
 
-function clearUserData(req, res, callback) {
+function clearUsers(req, res, callback) {
   userModel.User.remove({},
     (err, removed) => {
       if (err) callback(err);
@@ -133,9 +115,48 @@ function clearUserData(req, res, callback) {
     });
 }
 
+function clearRatings(req, res, callback) {
+  ratingModel.Rating.remove({},
+    (err, removed) => {
+      if (err) callback(err);
+      else callback(removed);
+    });
+}
+
+function clearComments(req, res, callback) {
+  commentModel.Comment.remove({},
+    (err, removed) => {
+      if (err) callback(err);
+      else callback(removed);
+    });
+}
+
+function clearAll(req, res, callback) {
+  commentModel.Comment.remove({}, (err) => {
+    if (err) console.log(err);
+    console.log('Comments removed');
+  });
+  ratingModel.Rating.remove({}, (err) => {
+    if (err) console.log(err);
+    console.log('Ratings removed');
+  });
+  userModel.User.remove({}, (err) => {
+    if (err) console.log(err);
+    console.log('User removed');
+  });
+  bikeModel.Bike.remove({}, (err) => {
+    if (err) console.log(err);
+    console.log('Bike removed');
+  });
+  callback('All cleared!');
+}
+
 module.exports = {
   insertBikeData,
   insertUserData,
-  clearBikeData,
-  clearUserData,
+  clearAll,
+  clearBikes,
+  clearUsers,
+  clearRatings,
+  clearComments,
 };

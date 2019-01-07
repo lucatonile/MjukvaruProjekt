@@ -14,14 +14,32 @@ router.post('/addusertestdata/', (req, res) => {
 });
 
 router.get('/clearuserdata/', (req, res) => {
-  testData.clearUserData(req, res, (result) => {
+  testData.clearUsers(req, res, (result) => {
     res.send(`user data cleared: ${JSON.stringify(result)}`);
   });
 });
 
 router.get('/clearbikedata/', (req, res) => {
-  testData.clearBikeData(req, res, (result) => {
+  testData.clearBikes(req, res, (result) => {
     res.send(`Bike data cleared: ${JSON.stringify(result)}`);
+  });
+});
+
+router.get('/clearcommentdata/', (req, res) => {
+  testData.clearComments(req, res, (result) => {
+    res.send(`Comment data cleared: ${JSON.stringify(result)}`);
+  });
+});
+
+router.get('/clearratingdata/', (req, res) => {
+  testData.clearRatings(req, res, (result) => {
+    res.send(`Rating data cleared: ${JSON.stringify(result)}`);
+  });
+});
+
+router.get('/clearall/', (req, res) => {
+  testData.clearAll(req, res, (result) => {
+    res.send(`All data cleared: ${JSON.stringify(result)}`);
   });
 });
 

@@ -10,6 +10,7 @@ const authRouter = require('./routes/auth');
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const bikesRouter = require('./routes/bikes');
+const commentsRouter = require('./routes/comments');
 
 require('./db.js');
 
@@ -36,6 +37,7 @@ app.use('/auth', authRouter);
 // Private routes
 app.use('/users', auth.validateUser, usersRouter);
 app.use('/bikes', auth.validateUser, bikesRouter);
+app.use('/comments', auth.validateUser, commentsRouter);
 
 // Test routes
 const testRouter = require('./routes/test');
